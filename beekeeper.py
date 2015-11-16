@@ -2,11 +2,20 @@ import urllib
 import json
 from functools import partial
 
-def fill_variables(variables, **kwargs):
+def fill_variables(variables, check_complete=True, **kwargs):
     for key in kwargs:
         if key in variables:
             variables[key]["value"] = kwargs[key]
+    if check_complete:
+        assert_values(**variables)
     return variables
+
+def assert_values(**variables):
+    print(variables)
+    missing = [variables[x]['name'] for x in variables if 'value' not in variables[x]]
+    if missing:
+        raise TypeError('Hive is missing required setting(s): {}'.format(missing))
+
 
 class Endpoint:
 
@@ -22,6 +31,10 @@ class Endpoint:
             raise ValueError("{} not in {}.".format(method, self.methods))
         #stuff to execute the query here
 
+    def build_url(self, **kwargs):
+        #insert code to add url params to the URL
+        pass
+
 class APIObject:
 
     def __init__(self, parent, actions):
@@ -31,12 +44,12 @@ class APIObject:
 class API:
 
     def __init__(self, root, variables, **kwargs):
-        self.root = root
         self.settings = fill_variables(variables, **kwargs)
-        self.new_endpoint = partial(Endpointelf.root,self.settings)
+        self.root = root
+        self.new_endpoint = partial(Endpoint,root,self.settings)
         self.endpoints = {}
 
-    def add_endpoint(self, name, path, variables, methods=["GET"]):
+    def add_endpoint(self, name, path, variables, methods=['GET']):
         self.endpoints[name] = self.new_endpoint(path, variables, methods)
 
     def add_object(self, name, actions):
