@@ -1,0 +1,48 @@
+{
+    "name": "SystemName",
+    "root": "url_here",
+    "variables": [
+        {"name": "Authorization",
+         "type": "header"},
+
+        {"name": "subdomain",
+         "type": "url_replacement",
+         "value": "my_subdomain"},
+
+        {"name": "apikey",
+         "type": "url_param"}
+    ],
+    "endpoints": {
+        "EndpointOne": {
+            "endpoint_url": "url_extension_here",
+            "methods": [
+                "GET",
+                "POST",
+                "PUT"
+            ],
+            "variables": {
+                //Same as the variables object on the API
+            }
+        }
+        //Insert as many more Endpoint objects as you want
+    },
+    "objects": {
+        "ObjectOne": {
+            "description": "Short description string",
+            "actions": {
+                "create":   {"name": "EndpointOne",
+                             "method": "POST"
+                            },
+                "update":   {"name": "EndpointTwo",
+                             "method": "PUT"
+                            },
+                "get":      {"name": "EndpointTwo",
+                             "method": "GET"
+                            },
+                "list":     {"name": "EndpointThree",
+                             "method": "GET"
+                            }
+            }
+        }
+    }
+}

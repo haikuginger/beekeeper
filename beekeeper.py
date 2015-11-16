@@ -28,7 +28,7 @@ class Endpoint:
 
     def execute(self, method, *args, **kwargs):
         if method not in self.methods:
-            raise ValueError("{} not in {}.".format(method, self.methods))
+            raise TypeError("{} not in valid method(s): {}.".format(method, self.methods))
         #stuff to execute the query here
 
     def build_url(self, **kwargs):
