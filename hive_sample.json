@@ -27,16 +27,16 @@
         "ObjectOne": {
             "description": "Short description string",
             "actions": {
-                "create":   {"name": "EndpointOne",
+                "create":   {"endpoint": "EndpointOne",
                              "method": "POST"
                             },
-                "update":   {"name": "EndpointTwo",
+                "update":   {"endpoint": "EndpointTwo",
                              "method": "PUT"
                             },
-                "get":      {"name": "EndpointTwo",
+                "get":      {"endpoint": "EndpointTwo",
                              "method": "GET"
                             },
-                "list":     {"name": "EndpointThree",
+                "list":     {"endpoint": "EndpointThree",
                              "method": "GET"
                             }
             }

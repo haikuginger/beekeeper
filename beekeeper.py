@@ -6,6 +6,8 @@ def fill_variables(variables, check_complete=True, **kwargs):
     for key in kwargs:
         if key in variables:
             variables[key]["value"] = kwargs[key]
+        else:
+            variables[key] = {"type": "url_param", "value": kwargs[key]}
     if check_complete:
         assert_values(**variables)
     return variables
@@ -21,6 +23,9 @@ def is_header(variable):
         return True
     return False
 
+def to_json_bytes(structure):
+    return bytes(json.dumps(structure))
+
 
 class Endpoint:
 
@@ -31,26 +36,28 @@ class Endpoint:
         for method in methods:
             setattr(self, method, partial(self.execute,method=method))
 
-    def execute(self, method, data=None, **kwargs):
+    def execute(self, method, data=None, dataparser=to_json_bytes, **kwargs):
         if method not in self.methods:
             raise TypeError("{} not in valid method(s): {}.".format(method, self.methods))
+        if dataparser and data:
+            data = dataparser(data)
         final_vars = fill_variables(self.variables, **kwargs)
         final_url = self.build_url(**final_vars)
         final_headers = {h:v['value'] for h,v in final_vars.items() if is_header(v)}
-        return urllib.request.Request(url=final_url,
-                                      data=data,
-                                      headers=final_headers,
-                                      method=method)
+        final_request = urllib.request.Request(url=final_url,
+                                               data=data,
+                                               headers=final_headers,
+                                               method=method)
+        return urllib.request.urlopen(final_request).read()
 
     def build_url(self, **kwargs):
-        #insert code to add url params to the URL
-        pass
+        replaced_url = self.url.format({x:x['value'] for x in kwargs})
 
 class APIObject:
 
     def __init__(self, parent, actions):
         for action, t in actions:
-            setattr(self, action, parent.get_method(t['name'],t['method']))
+            setattr(self, action, parent.get_method(t['endpoint'],t['method']))
 
 class API:
 
