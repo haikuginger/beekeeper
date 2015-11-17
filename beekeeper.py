@@ -52,7 +52,7 @@ class Endpoint:
                                                data=data,
                                                headers=final_headers,
                                                method=method)
-        return urllib.request.urlopen(final_request).read()
+        return urllib.request.urlopen(final_request).read().decode('utf-8')
 
     def build_url(self, **kwargs):
         replaced_url = self.url.format(**{x:y['value'] for x,y in kwargs.items()})
