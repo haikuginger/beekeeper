@@ -1,0 +1,45 @@
+{
+    "name": "Hubspot",
+    "root": "https://api.hubapi.com",
+    "variables": {
+        "hapikey": {"type": "url_param"}
+    },
+    "endpoints": {
+        "CreateContact": {
+            "path": "/contacts/v1/contact",
+            "methods": [
+                "POST"
+            ],
+            "variables": {}
+        },
+        "SingleContact": {
+            "path": "/contacts/v1/contact/vid/{contact_id}/profile",
+            "methods": [
+                "GET",
+                "PUT"
+            ],
+            "variables": {
+                "contact_id": {"type": "url_replacement"}
+            }
+        }
+    },
+    "objects": {
+        "Contact": {
+            "description": "An entity representing a single person",
+            "actions": {
+                "create": {
+                    "endpoint": "CreateContact",
+                    "method": "POST"
+                },
+                "update": {
+                    "endpoint": "SingleContact",
+                    "method": "PUT"
+                },
+                "get": {
+                    "endpoint": "SingleContact",
+                    "method": "GET"
+                }
+            }
+        }
+    }
+}

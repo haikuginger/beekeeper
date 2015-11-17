@@ -1,4 +1,4 @@
-import urllib
+import urllib.request
 import json
 from functools import partial
 
@@ -23,6 +23,11 @@ def is_header(variable):
         return True
     return False
 
+def is_param(variable):
+    if variable['type'] == 'url_param':
+        return True
+    return False
+
 def to_json_bytes(structure):
     return bytes(json.dumps(structure))
 
@@ -34,14 +39,15 @@ class Endpoint:
         self.variables = dict(inherited_values, **variables)
         self.methods = methods
         for method in methods:
-            setattr(self, method, partial(self.execute,method=method))
+            setattr(self, method, partial(self.execute, method=method))
 
-    def execute(self, method, data=None, dataparser=to_json_bytes, **kwargs):
+    def execute(self, method, *args, data=None, dataparser=to_json_bytes, **kwargs):
         if method not in self.methods:
             raise TypeError("{} not in valid method(s): {}.".format(method, self.methods))
         if dataparser and data:
             data = dataparser(data)
         final_vars = fill_variables(self.variables, **kwargs)
+        print(final_vars)
         final_url = self.build_url(**final_vars)
         final_headers = {h:v['value'] for h,v in final_vars.items() if is_header(v)}
         final_request = urllib.request.Request(url=final_url,
@@ -51,12 +57,14 @@ class Endpoint:
         return urllib.request.urlopen(final_request).read()
 
     def build_url(self, **kwargs):
-        replaced_url = self.url.format({x:x['value'] for x in kwargs})
+        replaced_url = self.url.format(**{x:y['value'] for x,y in kwargs.items()})
+        params = ['{}={}'.format(x, y['value']) for x,y in kwargs.items() if is_param(y)]
+        return replaced_url + '?' + '&'.join(params)
 
 class APIObject:
 
     def __init__(self, parent, actions):
-        for action, t in actions:
+        for action, t in actions.items():
             setattr(self, action, parent.get_method(t['endpoint'],t['method']))
 
 class API:
@@ -67,10 +75,20 @@ class API:
         self.new_endpoint = partial(Endpoint,root,self.settings)
         self.endpoints = {}
 
+    @classmethod
+    def from_hive(cls, hive, **kwargs):
+        this_api = API(hive['root'], hive['variables'], **kwargs)
+        for name, ep in hive['endpoints'].items():
+            this_api.add_endpoint(name, ep['path'], ep['variables'], methods=ep['methods'])
+        for name, obj in hive['objects'].items():
+            this_api.add_object(name, obj['actions'])
+        return this_api
+
     def add_endpoint(self, name, path, variables, methods=['GET']):
         self.endpoints[name] = self.new_endpoint(path, variables, methods)
 
     def add_object(self, name, actions):
+        print(actions)
         setattr(self, name, APIObject(self, actions))
 
     def get_method(self, endpoint_name, method):

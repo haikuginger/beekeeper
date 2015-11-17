@@ -11,7 +11,7 @@
     },
     "endpoints": {
         "EndpointOne": {
-            "endpoint_url": "url_extension_here",
+            "path": "url_extension_here",
             "methods": [
                 "GET",
                 "POST",
@@ -28,17 +28,13 @@
             "description": "Short description string",
             "actions": {
                 "create":   {"endpoint": "EndpointOne",
-                             "method": "POST"
-                            },
+                             "method": "POST"},
                 "update":   {"endpoint": "EndpointTwo",
-                             "method": "PUT"
-                            },
+                             "method": "PUT"},
                 "get":      {"endpoint": "EndpointTwo",
-                             "method": "GET"
-                            },
+                             "method": "GET"},
                 "list":     {"endpoint": "EndpointThree",
-                             "method": "GET"
-                            }
+                             "method": "GET"}
             }
         }
     }
