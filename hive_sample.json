@@ -1,17 +1,14 @@
 {
     "name": "SystemName",
     "root": "url_here",
-    "variables": [
-        {"name": "Authorization",
-         "type": "header"},
+    "variables": {
+        "Authorization": {"type": "header"},
 
-        {"name": "subdomain",
-         "type": "url_replacement",
-         "value": "my_subdomain"},
+        "subdomain": {"type": "url_replacement",
+                    "value": "my_subdomain"},
 
-        {"name": "apikey",
-         "type": "url_param"}
-    ],
+        "apikey": {"type": "url_param"}
+    },
     "endpoints": {
         "EndpointOne": {
             "endpoint_url": "url_extension_here",

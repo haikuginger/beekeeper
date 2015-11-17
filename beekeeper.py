@@ -12,9 +12,14 @@ def fill_variables(variables, check_complete=True, **kwargs):
 
 def assert_values(**variables):
     print(variables)
-    missing = [variables[x]['name'] for x in variables if 'value' not in variables[x]]
+    missing = [x for x in variables if 'value' not in variables[x]]
     if missing:
         raise TypeError('Hive is missing required setting(s): {}'.format(missing))
+
+def is_header(variable):
+    if variable['type'] == 'header':
+        return True
+    return False
 
 
 class Endpoint:
@@ -26,10 +31,16 @@ class Endpoint:
         for method in methods:
             setattr(self, method, partial(self.execute,method=method))
 
-    def execute(self, method, *args, **kwargs):
+    def execute(self, method, data=None, **kwargs):
         if method not in self.methods:
             raise TypeError("{} not in valid method(s): {}.".format(method, self.methods))
-        #stuff to execute the query here
+        final_vars = fill_variables(self.variables, **kwargs)
+        final_url = self.build_url(**final_vars)
+        final_headers = {h:v['value'] for h,v in final_vars.items() if is_header(v)}
+        return urllib.request.Request(url=final_url,
+                                      data=data,
+                                      headers=final_headers,
+                                      method=method)
 
     def build_url(self, **kwargs):
         #insert code to add url params to the URL
