@@ -13,7 +13,6 @@ def fill_variables(variables, check_complete=True, **kwargs):
     return variables
 
 def assert_values(**variables):
-    print(variables)
     missing = [x for x in variables if 'value' not in variables[x]]
     if missing:
         raise TypeError('Hive is missing required setting(s): {}'.format(missing))
@@ -39,7 +38,7 @@ class Endpoint:
         self.variables = dict(inherited_values, **variables)
         self.methods = methods
         for method in methods:
-            setattr(self, method, partial(self.execute, method=method))
+            setattr(self, method, partial(self.execute, method))
 
     def execute(self, method, *args, data=None, dataparser=to_json_bytes, **kwargs):
         if method not in self.methods:
@@ -47,7 +46,6 @@ class Endpoint:
         if dataparser and data:
             data = dataparser(data)
         final_vars = fill_variables(self.variables, **kwargs)
-        print(final_vars)
         final_url = self.build_url(**final_vars)
         final_headers = {h:v['value'] for h,v in final_vars.items() if is_header(v)}
         final_request = urllib.request.Request(url=final_url,
@@ -88,7 +86,6 @@ class API:
         self.endpoints[name] = self.new_endpoint(path, variables, methods)
 
     def add_object(self, name, actions):
-        print(actions)
         setattr(self, name, APIObject(self, actions))
 
     def get_method(self, endpoint_name, method):
