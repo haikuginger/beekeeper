@@ -28,7 +28,7 @@ def is_param(variable):
     return False
 
 def to_json_bytes(structure):
-    return bytes(json.dumps(structure))
+    return bytes(json.dumps(structure), encoding="utf-8")
 
 
 class Endpoint:
@@ -81,6 +81,10 @@ class API:
         for name, obj in hive['objects'].items():
             this_api.add_object(name, obj['actions'])
         return this_api
+
+    def from_hive_file(cls, fname, **kwargs):
+        hive = json.load(open('fname','r'))
+        return API.from_hive(hive, **kwargs)
 
     def add_endpoint(self, name, path, variables, methods=['GET']):
         self.endpoints[name] = self.new_endpoint(path, variables, methods)

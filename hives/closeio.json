@@ -1,0 +1,90 @@
+{
+    "name": "Close.io",
+    "root": "https://app.close.io/api/v1",
+    "variables": {
+        "Authorization" : {"type": "header"},
+        "Content-Type": {"type": "header", "value": "application/json"}
+    },
+    "endpoints": {
+        "SingleLead": {
+            "path": "/lead/{id}/",
+            "methods": [
+                "GET",
+                "PUT",
+                "DELETE"
+            ],
+            "variables": {
+                "id": {"type": "url_replacement"}
+            }
+        },
+        "CreateLead": {
+            "path": "/lead/",
+            "methods": [
+                "POST"
+            ],
+            "variables": {}
+        },
+        "LeadStatuses": {
+            "path": "/status/lead/",
+            "methods": [
+                "GET",
+                "POST"
+            ],
+            "variables": {}
+        },
+        "ModifyLeadStatuses": {
+            "path": "/status/lead/{status_id}/",
+            "methods": [
+                "PUT",
+                "DELETE"
+            ],
+            "variables": {
+                "status_id": {"type": "url_replacement"}
+            }
+        }
+    },
+    "objects": {
+        "Lead": {
+            "description": "An entity representing a company",
+            "actions": {
+                "create": {
+                    "endpoint": "CreateLead",
+                    "method": "POST"
+                },
+                "update": {
+                    "endpoint": "SingleLead",
+                    "method": "PUT"
+                },
+                "get": {
+                    "endpoint": "SingleLead",
+                    "method": "GET"
+                },
+                "delete": {
+                    "endpoint": "SingleLead",
+                    "method": "DELETE"
+                }
+            }
+        },
+        "LeadStatus": {
+            "description": "The valid options for lead status",
+            "actions": {
+                "list": {
+                    "endpoint": "LeadStatuses",
+                    "method": "GET"
+                },
+                "add": {
+                    "endpoint": "LeadStatuses",
+                    "method": "POST"
+                },
+                "edit": {
+                    "endpoint": "ModifyLeadStatuses",
+                    "method": "PUT"
+                },
+                "delete": {
+                    "endpoint": "ModifyLeadStatues",
+                    "method": "DELETE"
+                }
+            }
+        }
+    }
+}
