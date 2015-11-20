@@ -84,7 +84,7 @@ class API:
 
     @classmethod
     def from_hive_file(cls, fname, **kwargs):
-        hive = json.load(open('fname','r'))
+        hive = json.load(open(fname,'r'))
         return API.from_hive(hive, **kwargs)
 
     def add_endpoint(self, name, path, variables, methods=['GET']):
