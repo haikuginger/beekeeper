@@ -81,7 +81,7 @@
                     "method": "PUT"
                 },
                 "delete": {
-                    "endpoint": "ModifyLeadStatues",
+                    "endpoint": "ModifyLeadStatuses",
                     "method": "DELETE"
                 }
             }
