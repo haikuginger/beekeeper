@@ -82,6 +82,7 @@ class API:
             this_api.add_object(name, obj['actions'])
         return this_api
 
+    @classmethod
     def from_hive_file(cls, fname, **kwargs):
         hive = json.load(open('fname','r'))
         return API.from_hive(hive, **kwargs)
