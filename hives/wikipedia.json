@@ -28,6 +28,19 @@
                     "value": "content"
                 }
             }
+        },
+        "ArticleCategories": {
+            "path": "/w/api.php",
+            "methods": [
+                "GET"
+            ],
+            "variables": {
+                "titles": {"type": "url_param"},
+                "prop": {
+                    "type": "url_param",
+                    "value": "categories"
+                }
+            }
         }
     },
     "objects": {
@@ -36,6 +49,10 @@
             "actions": {
                 "get": {
                     "endpoint": "ArticleByName",
+                    "method": "GET"
+                },
+                "categories": {
+                    "endpoint": "ArticleCategories",
                     "method": "GET"
                 }
             }
