@@ -46,7 +46,7 @@ class Endpoint:
         if dataparser and data:
             data = dataparser(data)
         final_vars = fill_variables(self.variables, **kwargs)
-        final_url = self.build_url(**final_vars)
+        final_url = self.build_url(**final_vars).replace(" ", "%20")
         final_headers = {h:v['value'] for h,v in final_vars.items() if is_header(v)}
         final_request = urllib.request.Request(url=final_url,
                                                data=data,

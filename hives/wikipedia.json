@@ -1,0 +1,44 @@
+{
+    "name": "Wikipedia",
+    "root": "https://en.wikipedia.org",
+    "variables": {
+        "format": {
+            "type": "url_param",
+            "value": "json"
+        },
+        "action": {
+            "type": "url_param",
+            "value": "query"
+        }
+    },
+    "endpoints": {
+        "ArticleByName": {
+            "path": "/w/api.php",
+            "methods": [
+                "GET"
+            ],
+            "variables": {
+                "titles" : {"type": "url_param"},
+                "prop" : {
+                    "type": "url_param",
+                    "value": "revisions"
+                },
+                "rvprop": {
+                    "type": "url_param",
+                    "value": "content"
+                }
+            }
+        }
+    },
+    "objects": {
+        "Article": {
+            "description": "A single Wikipedia article",
+            "actions": {
+                "get": {
+                    "endpoint": "ArticleByName",
+                    "method": "GET"
+                }
+            }
+        }
+    }
+}
