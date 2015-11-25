@@ -23,8 +23,9 @@ class url_param(Variable):
 
 class Variables(dict):
 
-    def __init__(self):
+    def __init__(self, **kwargs):
         dict.__init__(self)
+        self.add(**kwargs)
 
     def add(self, **kwargs):
         for name, var in kwargs.items():
@@ -32,4 +33,7 @@ class Variables(dict):
 
     def fill(self, **kwargs):
         for var, val in kwargs.items():
-            self[var]['value'] = val
+            if var in self:
+                self[var]['value'] = val
+            else:
+                self[var] = url_param(value=val)
