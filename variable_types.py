@@ -20,3 +20,16 @@ class url_param(Variable):
 
     def __init__(self, **kwargs):
         Variable.__init__(self, 'url_param', **kwargs)
+
+class Variables(dict):
+
+    def __init__(self):
+        dict.__init__(self)
+
+    def add(self, **kwargs):
+        for name, var in kwargs.items():
+            self[name] = var
+
+    def fill(self, **kwargs):
+        for var, val in kwargs.items():
+            self[var]['value'] = val
