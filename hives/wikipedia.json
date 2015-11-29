@@ -1,6 +1,9 @@
 {
     "name": "Wikipedia",
     "root": "https://en.wikipedia.org",
+    "versioning": {
+        "version": 1
+    },
     "variables": {
         "format": {
             "type": "url_param",

@@ -1,13 +1,28 @@
 {
     "name": "SystemName",
     "root": "url_here",
+    "versioning": {
+        "version": 8,
+        "previousVersions": [
+            {
+                "version": 7,
+                "location": "http://path.to/previous/hive"
+            }
+        ]
+    },
     "variables": {
-        "Authorization": {"type": "header"},
+        "Authorization": {
+            "type": "header"
+        },
 
-        "subdomain": {"type": "url_replacement",
-                    "value": "my_subdomain"},
+        "subdomain": {
+            "type": "url_replacement",
+            "value": "my_subdomain"
+        },
 
-        "apikey": {"type": "url_param"}
+        "apikey": {
+            "type": "url_param"
+        }
     },
     "endpoints": {
         "EndpointOne": {
@@ -27,14 +42,22 @@
         "ObjectOne": {
             "description": "Short description string",
             "actions": {
-                "create":   {"endpoint": "EndpointOne",
-                             "method": "POST"},
-                "update":   {"endpoint": "EndpointTwo",
-                             "method": "PUT"},
-                "get":      {"endpoint": "EndpointTwo",
-                             "method": "GET"},
-                "list":     {"endpoint": "EndpointThree",
-                             "method": "GET"}
+                "create": {
+                    "endpoint": "EndpointOne",
+                    "method": "POST"
+                },
+                "update": {
+                    "endpoint": "EndpointTwo",
+                    "method": "PUT"
+                },
+                "get": {
+                    "endpoint": "EndpointTwo",
+                    "method": "GET"
+                },
+                "list": {
+                    "endpoint": "EndpointThree",
+                    "method": "GET"
+                }
             }
         }
     }
