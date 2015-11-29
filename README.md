@@ -31,6 +31,14 @@ this_widget = my_api.Widget.get(widget_id=123456)
 
 Again, the keyword argument `widget_id` is not part of the beekeeper codebase, but is defined in the hive file as being a variable needed for the endpoint related to the "get" action on the Widget APIObject. An action can be anything, as long as it's related to a particular Endpoint, and a particular HTTP method on that endpoint. In this case, the "Widget.get" action is likely related to a given Widget endpoint, and to the HTTP `GET` method on that endpoint.
 
-To compare, an `update` action would likely related to the same Endpoint (taking the `widget_id` keyword argument), but might use the `PUT` HTTP method. A `create`action would probably attach to a different endpoint, since there wouldn't yet be a `widget_id` variable to pass, and would likely use the HTTP `POST` method. And a `list` action that retrieves all Widget objects would probably access yet another different endpoint, but use the same HTTP `GET` method as the original `get` action.
+To compare, an `update` action would likely related to the same Endpoint (taking the `widget_id` keyword argument), but might use the `PUT` HTTP method. A `create` action would probably attach to a different endpoint, since there wouldn't yet be a `widget_id` variable to pass, and would likely use the HTTP `POST` method. And a `list` action that retrieves all Widget objects would probably access yet another different endpoint, but use the same HTTP `GET` method as the original `get` action.
 
 This abstraction allows developers to think more clearly about the actual object they're working with on the server, and more directly relate to what they're doing with that object. In comparison, while a well-designed REST API communicates clearly what's being done, a fully-built request still contains a substantial amount of detail that isn't meaningful. beekeeper, by minimizing the construction effort, provides the developer direct insight into the object structure of the server.
+
+## Hive structure
+
+Coming soon; for now, take a look at `hive_sample.json`.
+
+## Notes
+
+beekeeper does not currently do SSL certificate verification.
