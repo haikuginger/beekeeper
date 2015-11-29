@@ -37,7 +37,7 @@ This abstraction allows developers to think more clearly about the actual object
 
 ## Hive structure
 
-Coming soon; for now, take a look at `hive_sample.json`, or the included basic hive files in `/hives/`.
+Coming soon; for now, take a look at `hive_sample.json`, or the included basic hive files in `/hives/`. Subject to change.
 
 ## Notes
 
