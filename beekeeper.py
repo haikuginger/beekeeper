@@ -30,12 +30,8 @@ def is_param(variable):
 def to_json_bytes(structure):
     return bytes(json.dumps(structure), encoding="utf-8")
 
-def get_remote_hive(url):
-    response = urllib.request.urlopen(url).read()
-    return json.loads(response.decode('utf-8'))
-
 def hive_from_version(hive, version):
-    if version == hive['versioning']['version']:
+    if not version or version == hive['versioning']['version']:
         return hive
     hive_urls = [x['location'] for x in hive['versioning']['previousVersions'] if x['version'] == version]
     if len(hive_urls) == 1:
@@ -88,7 +84,7 @@ class API:
     @classmethod
     def from_hive(cls, hive, version=None, **kwargs):
         hive = hive_from_version(hive, version)
-        this_api = API(hive['root'], hive['variables'], **kwargs)
+        this_api = cls(hive['root'], hive['variables'], **kwargs)
         for name, ep in hive['endpoints'].items():
             this_api.add_endpoint(name, ep['path'], ep['variables'], methods=ep['methods'])
         for name, obj in hive['objects'].items():
@@ -98,7 +94,12 @@ class API:
     @classmethod
     def from_hive_file(cls, fname, version=None, **kwargs):
         hive = json.load(open(fname,'r'))
-        return API.from_hive(hive, version=version, **kwargs)
+        return cls.from_hive(hive, version=version, **kwargs)
+
+    @classmethod
+    def from_remote_hive(cls, url, version = None, **kwargs):
+        hive = urllib.request.urlopen(url).read().decode('utf-8')
+        return cls.from_hive(json.loads(hive), version=version, **kwargs)
 
     def add_endpoint(self, name, path, variables, methods=['GET']):
         self.endpoints[name] = self.new_endpoint(path, variables, methods)
