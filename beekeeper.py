@@ -30,6 +30,19 @@ def is_param(variable):
 def to_json_bytes(structure):
     return bytes(json.dumps(structure), encoding="utf-8")
 
+def get_remote_hive(url):
+    response = urllib.request.urlopen(url).read()
+    return json.loads(response.decode('utf-8'))
+
+def hive_from_version(hive, version):
+    if version == hive['versioning']['version']:
+        return hive
+    hive_urls = [x['location'] for x in hive['versioning']['previousVersions'] if x['version'] == version]
+    if len(hive_urls) == 1:
+        return get_remote_hive(hive_urls[0])
+    else:
+        raise KeyError('Could not determine appropriate hive for version {}'.format(version))
+
 class Endpoint:
 
     def __init__(self, root, inherited_values, path, variables, methods):
@@ -73,7 +86,8 @@ class API:
         self.endpoints = {}
 
     @classmethod
-    def from_hive(cls, hive, **kwargs):
+    def from_hive(cls, hive, version=None, **kwargs):
+        hive = hive_from_version(hive, version)
         this_api = API(hive['root'], hive['variables'], **kwargs)
         for name, ep in hive['endpoints'].items():
             this_api.add_endpoint(name, ep['path'], ep['variables'], methods=ep['methods'])
@@ -82,9 +96,9 @@ class API:
         return this_api
 
     @classmethod
-    def from_hive_file(cls, fname, **kwargs):
+    def from_hive_file(cls, fname, version=None, **kwargs):
         hive = json.load(open(fname,'r'))
-        return API.from_hive(hive, **kwargs)
+        return API.from_hive(hive, version=version, **kwargs)
 
     def add_endpoint(self, name, path, variables, methods=['GET']):
         self.endpoints[name] = self.new_endpoint(path, variables, methods)
