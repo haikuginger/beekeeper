@@ -30,7 +30,6 @@ def is_param(variable):
 def to_json_bytes(structure):
     return bytes(json.dumps(structure), encoding="utf-8")
 
-
 class Endpoint:
 
     def __init__(self, root, inherited_values, path, variables, methods):

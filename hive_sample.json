@@ -6,7 +6,8 @@
         "previousVersions": [
             {
                 "version": 7,
-                "location": "http://path.to/previous/hive"
+                "location": "http://path.to/previous/hive",
+                "expires": "2015-12-31T12:00:00Z"
             }
         ]
     },
