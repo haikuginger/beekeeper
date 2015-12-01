@@ -6,7 +6,7 @@ class Variable(dict):
         if value:
             self['value'] = value
 
-class Header(Variable):
+class header(Variable):
 
     def __init__(self, **kwargs):
         Variable.__init__(self, 'header', **kwargs)
@@ -30,10 +30,19 @@ class Variables(dict):
     def add(self, **kwargs):
         for name, var in kwargs.items():
             self[name] = var
+        return self
 
-    def fill(self, **kwargs):
+    def fill(self, check_complete=True, **kwargs):
         for var, val in kwargs.items():
             if var in self:
                 self[var]['value'] = val
             else:
                 self[var] = url_param(value=val)
+        if check_complete:
+            self.assert_full()
+        return self
+
+    def assert_full(self):
+        missing = [x for x,y in self.items() if 'value' not in y]
+        if len(missing):
+            raise TypeError('Missing settings: {}'.format(missing))

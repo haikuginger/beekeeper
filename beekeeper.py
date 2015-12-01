@@ -1,21 +1,7 @@
 import urllib.request
 import json
 from functools import partial
-
-def fill_variables(variables, check_complete=True, **kwargs):
-    for key in kwargs:
-        if key in variables:
-            variables[key]["value"] = kwargs[key]
-        else:
-            variables[key] = {"type": "url_param", "value": kwargs[key]}
-    if check_complete:
-        assert_values(**variables)
-    return variables
-
-def assert_values(**variables):
-    missing = [x for x in variables if 'value' not in variables[x]]
-    if missing:
-        raise TypeError('Hive is missing required setting(s): {}'.format(missing))
+from variable_types import header, url_replacement, url_param, Variables
 
 def is_header(variable):
     if variable['type'] == 'header':
@@ -31,9 +17,12 @@ def to_json_bytes(structure):
     return bytes(json.dumps(structure), encoding="utf-8")
 
 def hive_from_version(hive, version):
-    if not version or version == hive['versioning']['version']:
+    if not 'versioning' in hive:
         return hive
-    hive_urls = [x['location'] for x in hive['versioning']['previousVersions'] if x['version'] == version]
+    v = hive['versioning']
+    if not version or version == v['version']:
+        return hive
+    hive_urls = [x['location'] for x in v['previousVersions'] if x['version'] == version]
     if len(hive_urls) == 1:
         return get_remote_hive(hive_urls[0])
     else:
@@ -43,7 +32,7 @@ class Endpoint:
 
     def __init__(self, root, inherited_values, path, variables, methods):
         self.url = root + path
-        self.variables = dict(inherited_values, **variables)
+        self.variables = inherited_values.add(**variables)
         self.methods = methods
         for method in methods:
             setattr(self, method, partial(self.execute, method))
@@ -53,7 +42,8 @@ class Endpoint:
             raise TypeError("{} not in valid method(s): {}.".format(method, self.methods))
         if dataparser and data:
             data = dataparser(data)
-        final_vars = fill_variables(self.variables, **kwargs)
+        final_vars = self.variables
+        final_vars.fill(**kwargs)
         final_url = self.build_url(**final_vars).replace(" ", "%20")
         final_headers = {h:v['value'] for h,v in final_vars.items() if is_header(v)}
         final_request = urllib.request.Request(url=final_url,
@@ -76,7 +66,7 @@ class APIObject:
 class API:
 
     def __init__(self, root, variables, **kwargs):
-        self.settings = fill_variables(variables, **kwargs)
+        self.settings = Variables(**variables).fill(**kwargs)
         self.root = root
         self.new_endpoint = partial(Endpoint,root,self.settings)
         self.endpoints = {}
@@ -86,7 +76,7 @@ class API:
         hive = hive_from_version(hive, version)
         this_api = cls(hive['root'], hive['variables'], **kwargs)
         for name, ep in hive['endpoints'].items():
-            this_api.add_endpoint(name, ep['path'], ep['variables'], methods=ep['methods'])
+            this_api.add_endpoint(name, **ep)
         for name, obj in hive['objects'].items():
             this_api.add_object(name, obj['actions'])
         return this_api
