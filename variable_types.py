@@ -32,13 +32,13 @@ class Variables(dict):
             self[name] = var
         return self
 
-    def fill(self, check_complete=True, **kwargs):
+    def fill(self, full=True, **kwargs):
         for var, val in kwargs.items():
             if var in self:
                 self[var]['value'] = val
             else:
                 self[var] = url_param(value=val)
-        if check_complete:
+        if full:
             self.assert_full()
         return self
 
