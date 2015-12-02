@@ -1,26 +1,23 @@
 import urllib.request
 import json
 from functools import partial
+import copy
 from variable_types import header, url_replacement, url_param, Variables
 
 def is_header(variable):
-    if variable['type'] == 'header':
-        return True
-    return False
+    return variable['type'] == 'header'
 
 def is_param(variable):
-    if variable['type'] == 'url_param':
-        return True
-    return False
+    return variable['type'] == 'url_param'
 
 def to_json_bytes(structure):
     return bytes(json.dumps(structure), encoding="utf-8")
 
 def hive_from_version(hive, version):
-    if not 'versioning' in hive:
+    if not 'versioning' in hive or not version:
         return hive
     v = hive['versioning']
-    if not version or version == v['version']:
+    if version == v['version']:
         return hive
     hive_urls = [x['location'] for x in v['previousVersions'] if x['version'] == version]
     if len(hive_urls) == 1:
@@ -42,8 +39,9 @@ class Endpoint:
             raise TypeError("{} not in valid method(s): {}.".format(method, self.methods))
         if dataparser and data:
             data = dataparser(data)
-        final_vars = self.variables
-        final_vars.fill(**kwargs)
+        final_vars = self.fill_vars(**kwargs)
+        # Modularize the next line and handle other URL escapes. Really, this whole method
+        # needs to be seriously broken down.
         final_url = self.build_url(**final_vars).replace(" ", "%20")
         final_headers = {h:v['value'] for h,v in final_vars.items() if is_header(v)}
         final_request = urllib.request.Request(url=final_url,
@@ -56,6 +54,10 @@ class Endpoint:
         replaced_url = self.url.format(**{x:y['value'] for x,y in kwargs.items()})
         params = ['{}={}'.format(x, y['value']) for x,y in kwargs.items() if is_param(y)]
         return replaced_url + '?' + '&'.join(params)
+
+    def fill_vars(self, **kwargs):
+        final_vars = copy.deepcopy(self.variables)
+        return final_vars.fill(**kwargs)
 
 class APIObject:
 
