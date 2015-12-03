@@ -1,3 +1,5 @@
+from functools import partial
+
 class Variable(dict):
 
     def __init__(self, type, value=None, **kwargs):
@@ -26,18 +28,12 @@ class Variables(dict):
     def __init__(self, **kwargs):
         dict.__init__(self)
         self.add(**kwargs)
+        self.headers = partial(self.vals, 'header')
+        self.replacements = partial(self.vals, 'url_replacement')
+        self.params = partial(self.vals, 'url_param')
 
     def vals(self, var_type):
         return {x:y['value'] for x,y in self.items() if y['type']==var_type}
-
-    def headers(self):
-        return self.vals('header')
-
-    def replacements(self):
-        return self.vals('url_replacement')
-    
-    def params(self):
-        return self.vals('url_param')
 
     def add(self, **kwargs):
         for name, var in kwargs.items():
