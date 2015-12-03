@@ -42,9 +42,8 @@ class Variables(dict):
 
     def fill_arg(self, *args):
         missing = self.missing_vars()
-        if args:
-            if 1 == len(args) == len(missing):
-                self.setval(missing[0], args[0])
+        if 1 == len(args) == len(missing):
+            self.setval(missing[0], args[0])
 
     def fill_kwargs(self, **kwargs):
         for var, val in kwargs.items():
