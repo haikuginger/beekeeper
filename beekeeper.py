@@ -1,7 +1,7 @@
 import urllib.parse
 import urllib.request
 import json
-from parsers import JSONParser
+from parsers import JSONParser, RawParser
 from functools import partial
 import copy
 from variable_types import header, url_replacement, url_param, Variables
@@ -46,13 +46,13 @@ class Endpoint:
         for method in methods:
             setattr(self, method, partial(self.execute, method))
 
-    def execute(self, method, *args, data=None, **kwargs):
+    def execute(self, method, *args, data=None, parser=None, **kwargs):
         if method not in self.methods:
             raise TypeError("{} not in valid method(s): {}.".format(method, self.methods))
         final_vars = self.fill_vars(*args, **kwargs)
         final_url = self.build_url(**final_vars)
         final_headers = {h:v['value'] for h,v in final_vars.items() if is_header(v)}
-        return request(final_url, method, final_headers, data, self.parser)
+        return request(final_url, method, final_headers, data, parser or self.parser)
 
     def build_url(self, **kwargs):
         replaced_url = self.url.format(**{x:y['value'] for x,y in kwargs.items()})
@@ -71,7 +71,10 @@ class APIObject:
 
 class API:
     
-    PARSERS = {"application/json": JSONParser}
+    PARSERS = {
+        "application/json": JSONParser,
+        "application/octet-stream": RawParser
+    }
 
     def __init__(self, root, variables, data_format, *args, **kwargs):
         self.settings = Variables(**variables).fill(*args, **kwargs)
@@ -99,6 +102,10 @@ class API:
     def from_remote_hive(cls, url, *args, version = None, **kwargs):
         hive = urllib.request.urlopen(url).read().decode('utf-8')
         return cls.from_hive(json.loads(hive), *args, version=version, **kwargs)
+
+    @classmethod
+    def add_parser(cls, mimetype, parser):
+        cls.PARSERS[mimetype] = parser
 
     def add_endpoint(self, name, path, variables, methods=['GET']):
         self.endpoints[name] = self.new_endpoint(path, variables, methods)
