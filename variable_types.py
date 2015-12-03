@@ -27,6 +27,18 @@ class Variables(dict):
         dict.__init__(self)
         self.add(**kwargs)
 
+    def vals(self, var_type):
+        return {x:y['value'] for x,y in self.items() if y['type']==var_type}
+
+    def headers(self):
+        return self.vals('header')
+
+    def replacements(self):
+        return self.vals('url_replacement')
+    
+    def params(self):
+        return self.vals('url_param')
+
     def add(self, **kwargs):
         for name, var in kwargs.items():
             self[name] = var

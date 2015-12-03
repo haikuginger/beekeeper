@@ -6,23 +6,10 @@ from functools import partial
 import copy
 from variable_types import header, url_replacement, url_param, Variables
 
-def is_header(variable):
-    return variable['type'] == 'header'
-
-def is_param(variable):
-    return variable['type'] == 'url_param'
-
-def to_json_bytes(structure):
-    if structure:
-        return bytes(json.dumps(structure), encoding="utf-8")
-    return None
-
 def hive_from_version(hive, version):
-    if not 'versioning' in hive or not version:
+    if not 'versioning' in hive or not version or version == hive['versioning']['version']:
         return hive
     v = hive['versioning']
-    if version == v['version']:
-        return hive
     hive_urls = [x['location'] for x in v['previousVersions'] if x['version'] == version]
     if len(hive_urls) == 1:
         return get_remote_hive(hive_urls[0])
@@ -51,13 +38,12 @@ class Endpoint:
             raise TypeError("{} not in valid method(s): {}.".format(method, self.methods))
         final_vars = self.fill_vars(*args, **kwargs)
         final_url = self.build_url(**final_vars)
-        final_headers = {h:v['value'] for h,v in final_vars.items() if is_header(v)}
+        final_headers = final_vars.headers()
         return request(final_url, method, final_headers, data, parser or self.parser)
 
     def build_url(self, **kwargs):
-        replaced_url = self.url.format(**{x:y['value'] for x,y in kwargs.items()})
-        params = {x:y['value'] for x,y in kwargs.items() if is_param(y)}
-        return replaced_url + "?" + urllib.parse.urlencode(params)
+        replaced_url = self.url.format(**kwargs.replacements())
+        return replaced_url + "?" + urllib.parse.urlencode(kwargs.params())
 
     def fill_vars(self, *args, **kwargs):
         final_vars = copy.deepcopy(self.variables)
