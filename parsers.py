@@ -12,7 +12,7 @@ class JSONParser:
     def load(response):
         return json.loads(response.read().decode('utf-8'))
 
-class RAWParser:
+class RawParser:
 
     @staticmethod
     def dump(python_object):
