@@ -43,15 +43,12 @@ class Variables(dict):
     def fill_arg(self, *args):
         missing = self.missing_vars()
         if args:
-            if len(missing) == 1 and len(args) == 1:
+            if 1 == len(args) == len(missing):
                 self.setval(missing[0], args[0])
 
     def fill_kwargs(self, **kwargs):
         for var, val in kwargs.items():
-            if var in self:
-                self.setval(var, val)
-            else:
-                self[var] = url_param(value=val)
+            self.setval(var, val)
 
     def assert_full(self):
         if self.missing_vars():
@@ -65,10 +62,9 @@ class Variables(dict):
         return self
 
     def setval(self, varname, value):
-        self[varname]['value'] = value
+        if varname in self:
+            self[varname]['value'] = value
+        self[varname] = url_param(value=value)
 
     def missing_vars(self):
-        missing = [x for x,y in self.items() if 'value' not in y]
-        if len(missing):
-            return missing
-        return False
+        return [x for x,y in self.items() if 'value' not in y]
