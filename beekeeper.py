@@ -1,3 +1,4 @@
+import urllib.parse
 import urllib.request
 import json
 from functools import partial
@@ -11,7 +12,9 @@ def is_param(variable):
     return variable['type'] == 'url_param'
 
 def to_json_bytes(structure):
-    return bytes(json.dumps(structure), encoding="utf-8")
+    if structure:
+        return bytes(json.dumps(structure), encoding="utf-8")
+    return None
 
 def hive_from_version(hive, version):
     if not 'versioning' in hive or not version:
@@ -25,6 +28,10 @@ def hive_from_version(hive, version):
     else:
         raise KeyError('Could not determine appropriate hive for version {}'.format(version))
 
+def request(url, method, headers, data=None, parser=json.loads):
+    final_request = urllib.request.Request(url=url, data=data, headers=headers, method=method)
+    return parser(urllib.request.urlopen(final_request).read().decode('utf-8'))
+
 class Endpoint:
 
     def __init__(self, root, inherited_values, path, variables, methods):
@@ -37,23 +44,16 @@ class Endpoint:
     def execute(self, method, *args, data=None, dataparser=to_json_bytes, **kwargs):
         if method not in self.methods:
             raise TypeError("{} not in valid method(s): {}.".format(method, self.methods))
-        if dataparser and data:
-            data = dataparser(data)
+        data = dataparser(data)
         final_vars = self.fill_vars(*args, **kwargs)
-        # Modularize the next line and handle other URL escapes. Really, this whole method
-        # needs to be seriously broken down.
-        final_url = self.build_url(**final_vars).replace(" ", "%20")
+        final_url = self.build_url(**final_vars)
         final_headers = {h:v['value'] for h,v in final_vars.items() if is_header(v)}
-        final_request = urllib.request.Request(url=final_url,
-                                               data=data,
-                                               headers=final_headers,
-                                               method=method)
-        return urllib.request.urlopen(final_request).read().decode('utf-8')
+        return request(final_url, method, final_headers, data)
 
     def build_url(self, **kwargs):
         replaced_url = self.url.format(**{x:y['value'] for x,y in kwargs.items()})
-        params = ['{}={}'.format(x, y['value']) for x,y in kwargs.items() if is_param(y)]
-        return replaced_url + '?' + '&'.join(params)
+        params = {x:y['value'] for x,y in kwargs.items() if is_param(y)}
+        return replaced_url + "?" + urllib.parse.urlencode(params)
 
     def fill_vars(self, *args, **kwargs):
         final_vars = copy.deepcopy(self.variables)
