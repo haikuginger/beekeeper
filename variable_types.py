@@ -53,7 +53,8 @@ class Variables(dict):
         self.fill_arg(*args)
         self.fill_kwargs(**kwargs)
         if full:
-            self.assert_full
+            self.assert_full()
+        return self
 
     def setval(self, varname, value):
         self[varname]['value'] = value
