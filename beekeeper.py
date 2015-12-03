@@ -37,13 +37,13 @@ class Endpoint:
         if method not in self.methods:
             raise TypeError("{} not in valid method(s): {}.".format(method, self.methods))
         final_vars = self.fill_vars(*args, **kwargs)
-        final_url = self.build_url(**final_vars)
+        final_url = self.build_url(final_vars)
         final_headers = final_vars.headers()
         return request(final_url, method, final_headers, data, parser or self.parser)
 
-    def build_url(self, **kwargs):
-        replaced_url = self.url.format(**kwargs.replacements())
-        return replaced_url + "?" + urllib.parse.urlencode(kwargs.params())
+    def build_url(self, variables):
+        replaced_url = self.url.format(**variables.replacements())
+        return replaced_url + "?" + urllib.parse.urlencode(variables.params())
 
     def fill_vars(self, *args, **kwargs):
         final_vars = copy.deepcopy(self.variables)
