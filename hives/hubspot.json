@@ -1,6 +1,7 @@
 {
     "name": "Hubspot",
     "root": "https://api.hubapi.com",
+    "format": "application/json",
     "variables": {
         "hapikey": {"type": "url_param"}
     },

@@ -1,6 +1,7 @@
 import urllib.parse
 import urllib.request
 import json
+from parsers import JSONParser
 from functools import partial
 import copy
 from variable_types import header, url_replacement, url_param, Variables
@@ -28,27 +29,30 @@ def hive_from_version(hive, version):
     else:
         raise KeyError('Could not determine appropriate hive for version {}'.format(version))
 
-def request(url, method, headers, data=None, parser=json.loads):
-    final_request = urllib.request.Request(url=url, data=data, headers=headers, method=method)
-    return parser(urllib.request.urlopen(final_request).read().decode('utf-8'))
+def request(url, method, headers, data, parser):
+    final_request = urllib.request.Request(url=url,
+                                           data=parser.dump(data),
+                                           headers=headers,
+                                           method=method)
+    return parser.load(urllib.request.urlopen(final_request))
 
 class Endpoint:
 
-    def __init__(self, root, inherited_values, path, variables, methods):
+    def __init__(self, root, inherited_values, parser, path, variables, methods):
         self.url = root + path
         self.variables = inherited_values.add(**variables)
         self.methods = methods
+        self.parser = parser
         for method in methods:
             setattr(self, method, partial(self.execute, method))
 
-    def execute(self, method, *args, data=None, dataparser=to_json_bytes, **kwargs):
+    def execute(self, method, *args, data=None, **kwargs):
         if method not in self.methods:
             raise TypeError("{} not in valid method(s): {}.".format(method, self.methods))
-        data = dataparser(data)
         final_vars = self.fill_vars(*args, **kwargs)
         final_url = self.build_url(**final_vars)
         final_headers = {h:v['value'] for h,v in final_vars.items() if is_header(v)}
-        return request(final_url, method, final_headers, data)
+        return request(final_url, method, final_headers, data, self.parser)
 
     def build_url(self, **kwargs):
         replaced_url = self.url.format(**{x:y['value'] for x,y in kwargs.items()})
@@ -66,20 +70,23 @@ class APIObject:
             setattr(self, action, parent.get_method(t['endpoint'],t['method']))
 
 class API:
+    
+    PARSERS = {"application/json": JSONParser}
 
-    def __init__(self, root, variables, *args, **kwargs):
+    def __init__(self, root, variables, data_format, *args, **kwargs):
         self.settings = Variables(**variables).fill(*args, **kwargs)
+        self.parser = API.PARSERS[data_format]
         self.root = root
-        self.new_endpoint = partial(Endpoint,root,self.settings)
+        self.new_endpoint = partial(Endpoint,root,self.settings,self.parser)
         self.endpoints = {}
 
     @classmethod
     def from_hive(cls, hive, *args, version=None, **kwargs):
-        hive = hive_from_version(hive, version)
-        this_api = cls(hive['root'], hive['variables'], *args, **kwargs)
-        for name, ep in hive['endpoints'].items():
+        h = hive_from_version(hive, version)
+        this_api = cls(h['root'], h['variables'], h['format'], *args, **kwargs)
+        for name, ep in h['endpoints'].items():
             this_api.add_endpoint(name, **ep)
-        for name, obj in hive['objects'].items():
+        for name, obj in h['objects'].items():
             this_api.add_object(name, obj['actions'])
         return this_api
 
