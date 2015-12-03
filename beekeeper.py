@@ -1,7 +1,7 @@
 import urllib.parse
 import urllib.request
 import json
-from parsers import JSONParser, RawParser
+import parsers
 from functools import partial
 import copy
 from variable_types import header, url_replacement, url_param, Variables
@@ -58,8 +58,8 @@ class APIObject:
 class API:
     
     PARSERS = {
-        "application/json": JSONParser,
-        "application/octet-stream": RawParser
+        "application/json": parsers.JSONParser,
+        "application/octet-stream": parsers.RawParser
     }
 
     def __init__(self, root, variables, data_format, *args, **kwargs):
