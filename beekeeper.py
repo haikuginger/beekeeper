@@ -39,7 +39,7 @@ class Endpoint:
             raise TypeError("{} not in valid method(s): {}.".format(method, self.methods))
         if dataparser and data:
             data = dataparser(data)
-        final_vars = self.fill_vars(**kwargs)
+        final_vars = self.fill_vars(*args, **kwargs)
         # Modularize the next line and handle other URL escapes. Really, this whole method
         # needs to be seriously broken down.
         final_url = self.build_url(**final_vars).replace(" ", "%20")
@@ -55,9 +55,9 @@ class Endpoint:
         params = ['{}={}'.format(x, y['value']) for x,y in kwargs.items() if is_param(y)]
         return replaced_url + '?' + '&'.join(params)
 
-    def fill_vars(self, **kwargs):
+    def fill_vars(self, *args, **kwargs):
         final_vars = copy.deepcopy(self.variables)
-        return final_vars.fill(**kwargs)
+        return final_vars.fill(*args, **kwargs)
 
 class APIObject:
 
@@ -67,16 +67,16 @@ class APIObject:
 
 class API:
 
-    def __init__(self, root, variables, **kwargs):
-        self.settings = Variables(**variables).fill(**kwargs)
+    def __init__(self, root, variables, *args, **kwargs):
+        self.settings = Variables(**variables).fill(*args, **kwargs)
         self.root = root
         self.new_endpoint = partial(Endpoint,root,self.settings)
         self.endpoints = {}
 
     @classmethod
-    def from_hive(cls, hive, version=None, **kwargs):
+    def from_hive(cls, hive, *args, version=None, **kwargs):
         hive = hive_from_version(hive, version)
-        this_api = cls(hive['root'], hive['variables'], **kwargs)
+        this_api = cls(hive['root'], hive['variables'], *args, **kwargs)
         for name, ep in hive['endpoints'].items():
             this_api.add_endpoint(name, **ep)
         for name, obj in hive['objects'].items():
@@ -84,14 +84,14 @@ class API:
         return this_api
 
     @classmethod
-    def from_hive_file(cls, fname, version=None, **kwargs):
+    def from_hive_file(cls, fname, *args, version=None, **kwargs):
         hive = json.load(open(fname,'r'))
-        return cls.from_hive(hive, version=version, **kwargs)
+        return cls.from_hive(hive, *args, version=version, **kwargs)
 
     @classmethod
-    def from_remote_hive(cls, url, version = None, **kwargs):
+    def from_remote_hive(cls, url, *args, version = None, **kwargs):
         hive = urllib.request.urlopen(url).read().decode('utf-8')
-        return cls.from_hive(json.loads(hive), version=version, **kwargs)
+        return cls.from_hive(json.loads(hive), *args, version=version, **kwargs)
 
     def add_endpoint(self, name, path, variables, methods=['GET']):
         self.endpoints[name] = self.new_endpoint(path, variables, methods)

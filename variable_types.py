@@ -32,17 +32,23 @@ class Variables(dict):
             self[name] = var
         return self
 
-    def fill(self, full=True, **kwargs):
+    def fill(self, *args, full=True, **kwargs):
+        missing = self.missing_vars()
+        if args:
+            if len(missing) == 1 and len(args) == 1:
+                self[missing[0]]['value'] = args[0]
         for var, val in kwargs.items():
             if var in self:
                 self[var]['value'] = val
             else:
                 self[var] = url_param(value=val)
         if full:
-            self.assert_full()
+            if self.missing_vars():
+                raise TypeError('Missing settings: {}'.format(self.missing_vars()))
         return self
 
-    def assert_full(self):
+    def missing_vars(self):
         missing = [x for x,y in self.items() if 'value' not in y]
         if len(missing):
-            raise TypeError('Missing settings: {}'.format(missing))
+            return missing
+        return False
