@@ -41,4 +41,4 @@ Coming soon; for now, take a look at `hive_sample.json`, or the included basic h
 
 ## Notes
 
-beekeeper does not currently do SSL certificate verification.
+beekeeper does not currently do SSL certificate verification when used on Python versions earlier than 3.4.3. If ported to use urllib2 for python2 compatibility in future, SSL certificate verification will require 2.7.9 or later.
