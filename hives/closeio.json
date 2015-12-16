@@ -1,6 +1,10 @@
 {
     "name": "Close.io",
     "root": "https://app.close.io/api/v1",
+    "format": "application/json",
+    "versioning": {
+        "version": "FINAL"
+    },
     "variables": {
         "Authorization" : {"type": "header"},
         "Content-Type": {"type": "header", "value": "application/json"}
