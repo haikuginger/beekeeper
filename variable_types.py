@@ -58,11 +58,10 @@ class Variables(dict):
         if self.missing_vars():
             raise TypeError('Missing settings: {}'.format(self.missing_vars()))
 
-    def fill(self, *args, full=True, **kwargs):
+    def fill(self, *args, **kwargs):
         self.fill_kwargs(**kwargs)
         self.fill_arg(*args)
-        if full:
-            self.assert_full()
+        self.assert_full()
         return self
 
     def setval(self, varname, value):
