@@ -1,6 +1,7 @@
 {
     "name": "Wikipedia",
     "root": "https://en.wikipedia.org",
+    "format": "application/json",
     "versioning": {
         "version": 1
     },
