@@ -5,8 +5,10 @@ import parsers
 from functools import partial
 import copy
 from variable_types import header, url_replacement, url_param, Variables
+from hive import Hive
 
 def request(url, method, headers, data, parser):
+    print(url)
     final_request = urllib.request.Request(url=url,
                                            data=parser.dump(data),
                                            headers=headers,
@@ -17,7 +19,7 @@ class Endpoint:
 
     def __init__(self, root, inherited_values, parser, path, variables, methods):
         self.url = root + path
-        self.variables = inherited_values.add(**variables)
+        self.variables = copy.deepcopy(inherited_values).add(**variables)
         self.methods = methods
         self.parser = parser
         for method in methods:
@@ -60,8 +62,8 @@ class API:
         self.endpoints = {}
 
     @classmethod
-    def from_hive(cls, hive, *args, version=None, **kwargs):
-        h = cls.from_version(hive, version)
+    def from_hive(cls, hive, *args, **kwargs):
+        h = hive
         this_api = cls(h['root'], h['variables'], h['format'], *args, **kwargs)
         for name, ep in h['endpoints'].items():
             this_api.add_endpoint(name, **ep)
@@ -71,24 +73,11 @@ class API:
 
     @classmethod
     def from_hive_file(cls, fname, *args, version=None, **kwargs):
-        hive = json.load(open(fname,'r'))
-        return cls.from_hive(hive, *args, version=version, **kwargs)
+        return cls.from_hive(Hive.from_file(fname, version), *args, **kwargs)
 
     @classmethod
     def from_remote_hive(cls, url, *args, version = None, **kwargs):
-        hive = urllib.request.urlopen(url).read().decode('utf-8')
-        return cls.from_hive(json.loads(hive), *args, version=version, **kwargs)
-
-    @classmethod
-    def from_version(hive, version):
-        if not 'versioning' in hive or not version or version == hive['versioning']['version']:
-                return hive
-        v = hive['versioning']
-        hive_urls = [x['location'] for x in v['previousVersions'] if x['version'] == version]
-        if len(hive_urls) == 1:
-            return urllib.request.urlopen(hive_urls[0]).read().decode('utf-8')
-        else:
-            raise KeyError('Could not determine appropriate hive for version {}'.format(version))
+        return cls.from_hive(Hive.from_url(url, version), *args, **kwargs)
 
     @classmethod
     def add_parser(cls, mimetype, parser):

@@ -8,6 +8,11 @@ class Variable(dict):
         if value:
             self['value'] = value
 
+    def is_filled(self):
+        if 'value' in self or self['optional']:
+            return True
+        return False
+
 class header(Variable):
 
     def __init__(self, **kwargs):
@@ -63,7 +68,8 @@ class Variables(dict):
     def setval(self, varname, value):
         if varname in self:
             self[varname]['value'] = value
-        self[varname] = url_param(value=value)
+        else:
+            self[varname] = url_param(value=value)
 
     def missing_vars(self):
-        return [x for x,y in self.items() if 'value' not in y]
+        return [x for x,y in self.items() if y.is_filled()]
