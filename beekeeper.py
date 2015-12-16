@@ -6,16 +6,6 @@ from functools import partial
 import copy
 from variable_types import header, url_replacement, url_param, Variables
 
-def hive_from_version(hive, version):
-    if not 'versioning' in hive or not version or version == hive['versioning']['version']:
-        return hive
-    v = hive['versioning']
-    hive_urls = [x['location'] for x in v['previousVersions'] if x['version'] == version]
-    if len(hive_urls) == 1:
-        return get_remote_hive(hive_urls[0])
-    else:
-        raise KeyError('Could not determine appropriate hive for version {}'.format(version))
-
 def request(url, method, headers, data, parser):
     final_request = urllib.request.Request(url=url,
                                            data=parser.dump(data),
@@ -71,7 +61,7 @@ class API:
 
     @classmethod
     def from_hive(cls, hive, *args, version=None, **kwargs):
-        h = hive_from_version(hive, version)
+        h = cls.from_version(hive, version)
         this_api = cls(h['root'], h['variables'], h['format'], *args, **kwargs)
         for name, ep in h['endpoints'].items():
             this_api.add_endpoint(name, **ep)
@@ -88,6 +78,17 @@ class API:
     def from_remote_hive(cls, url, *args, version = None, **kwargs):
         hive = urllib.request.urlopen(url).read().decode('utf-8')
         return cls.from_hive(json.loads(hive), *args, version=version, **kwargs)
+
+    @classmethod
+    def from_version(hive, version):
+        if not 'versioning' in hive or not version or version == hive['versioning']['version']:
+                return hive
+        v = hive['versioning']
+        hive_urls = [x['location'] for x in v['previousVersions'] if x['version'] == version]
+        if len(hive_urls) == 1:
+            return urllib.request.urlopen(hive_urls[0]).read().decode('utf-8')
+        else:
+            raise KeyError('Could not determine appropriate hive for version {}'.format(version))
 
     @classmethod
     def add_parser(cls, mimetype, parser):
