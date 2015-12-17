@@ -1,0 +1,34 @@
+{
+    "name": "Zoho",
+    "root": "https://crm.zoho.com/crm/private/json",
+    "format": "application/json",
+    "variables": {
+        "authtoken": {"type": "url_param"},
+        "scope": {
+            "type": "url_param",
+            "value": "crmapi"
+        }
+    },
+    "endpoints": {
+        "EntityFields": {
+            "path": "/{entity_name}/getFields",
+            "methods": [
+                "GET"
+            ],
+            "variables": {
+                "entity_name": {"type": "url_replacement"}
+            }
+        }
+    },
+    "objects": {
+        "Fields": {
+            "description": "List the fields on an object",
+            "actions": {
+                "get": {
+                    "endpoint": "EntityFields",
+                    "method": "GET"
+                }
+            }
+        }
+    }
+}
