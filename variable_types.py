@@ -3,7 +3,7 @@ from functools import partial
 class Variable(dict):
 
     def __init__(self, type, **kwargs):
-        dict.__init__(self, **kwargs)
+        super().__init__(**kwargs)
         self['type'] = type
 
     def is_filled(self):
@@ -14,22 +14,22 @@ class Variable(dict):
 class header(Variable):
 
     def __init__(self, **kwargs):
-        Variable.__init__(self, 'header', **kwargs)
+        super().__init__('header', **kwargs)
 
 class url_replacement(Variable):
 
     def __init__(self, **kwargs):
-        Variable.__init__(self, 'url_replacement', **kwargs)
+        super().__init__('url_replacement', **kwargs)
 
 class url_param(Variable):
 
     def __init__(self, **kwargs):
-        Variable.__init__(self, 'url_param', **kwargs)
+        super().__init__('url_param', **kwargs)
 
 class Variables(dict):
 
     def __init__(self, **kwargs):
-        dict.__init__(self)
+        super().__init__()
         self.add(**kwargs)
         self.headers = partial(self.vals, 'header')
         self.replacements = partial(self.vals, 'url_replacement')
