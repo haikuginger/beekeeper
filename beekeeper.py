@@ -4,7 +4,7 @@ import json
 import parsers
 from functools import partial
 import copy
-from variable_types import header, url_replacement, url_param, Variables
+from variable_types import header, url_replacement, url_param, Variables, Variable
 from hive import Hive
 
 def request(url, method, headers, data, parser):
@@ -34,7 +34,7 @@ class Endpoint:
         return request(final_url, method, final_headers, data, parser or self.parser)
 
     def build_url(self, variables):
-        replaced_url = self.url.format(**variables.replacements())
+        replaced_url = self.url.format(**variables.replacements(final=True))
         return replaced_url + "?" + urllib.parse.urlencode(variables.params())
 
     def fill_vars(self, *args, **kwargs):

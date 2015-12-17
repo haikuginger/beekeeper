@@ -2,14 +2,12 @@ from functools import partial
 
 class Variable(dict):
 
-    def __init__(self, type, value=None, **kwargs):
-        dict.__init__(self)
+    def __init__(self, type, **kwargs):
+        dict.__init__(self, **kwargs)
         self['type'] = type
-        if value:
-            self['value'] = value
 
     def is_filled(self):
-        if 'value' in self or self['optional']:
+        if 'value' in self or ('optional' in self and self['optional']):
             return True
         return False
 
@@ -37,12 +35,14 @@ class Variables(dict):
         self.replacements = partial(self.vals, 'url_replacement')
         self.params = partial(self.vals, 'url_param')
 
-    def vals(self, var_type):
+    def vals(self, var_type, final=False):
+        if final:
+            self.assert_full()
         return {x:y['value'] for x,y in self.items() if y['type']==var_type}
 
     def add(self, **kwargs):
         for name, var in kwargs.items():
-            self[name] = var
+            self[name] = Variable(**var)
         return self
 
     def fill_arg(self, *args):
@@ -71,4 +71,4 @@ class Variables(dict):
             self[varname] = url_param(value=value)
 
     def missing_vars(self):
-        return [x for x,y in self.items() if y.is_filled()]
+        return [x for x,y in self.items() if not y.is_filled()]

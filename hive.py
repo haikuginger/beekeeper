@@ -15,7 +15,7 @@ class Hive(dict):
         return cls(**utils.download_as_json(url)).from_version(version)
 
     def from_version(self, version):
-        if self['versioning']['version'] == version or not version:
+        if not version or self['versioning']['version'] == version:
             return self
         else:
             return Hive(**utils.download_as_json(self.get_version_url(version)))
