@@ -1,6 +1,6 @@
 import urllib.parse
 import copy
-from variable_types import Variables
+from variables import Variables
 from hive import Hive
 
 class Endpoint:
@@ -59,19 +59,9 @@ class Action:
         headers = variables.headers()
         data = variables.data()
 
-    def url(self, variables):
-        replaced = self.endpoint.url().format(**variables.replacements(final=True))
-        return replaced + '?' + urllib.parse.urlencode(variables.params())
-
-    def takes(self):
-        if self.mimetype and 'takes' in self.mimetype:
-            return self.mimetype['takes']
-        else:
-            return self.endpoint.format()
-
-    def returns(self):
-        if self.mimetype and 'returns' in self.mimetype:
-            return self.mimetype['returns']
+    def format(direction='both'):
+        if self.mimetype and direction in self.mimetype:
+            return self.mimetype[direction]
         else:
             return self.endpoint.format()
 
@@ -115,5 +105,3 @@ class API:
 
     def format(self):
         return self.mimetype
-
-
