@@ -76,7 +76,7 @@ class API:
         return cls.from_hive(Hive.from_file(fname, version), *args, **kwargs)
 
     @classmethod
-    def from_remote_hive(cls, url, *args, version = None, **kwargs):
+    def from_remote_hive(cls, url, *args, version=None, **kwargs):
         return cls.from_hive(Hive.from_url(url, version), *args, **kwargs)
 
     @classmethod
