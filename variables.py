@@ -1,4 +1,6 @@
 from functools import partial
+from urllib.parse import urlencode
+from parsers import encode
 
 def is_var(var):
     return isinstance(var, Variable)
@@ -28,27 +30,33 @@ class Variables(dict):
         self.replacements = partial(self.vals, 'url_replacement')
         self.params = partial(self.vals, 'url_param')
         self.form = partial(self.vals, 'http_form')
+        self.data = partial(self.vals, 'data')
 
-    def request(self, url, mime):
-        pass
+    def render(self, action):
+        return_dict = {}
+        url = action.url().format(self.replacements(final=True))
+        url += '?' + urlencode(self.params(final=True))
+        return_dict['url'] = url
+        return_dict['headers'] = self.headers(final=True)
+        mimetype = action.format('takes')
+        data = self.data()
+        if self.form() and not data:
+            mimetype = 'x-www-form-urlencoded'
+            data = self.form(final=True)
+        return_dict['headers']['Content-Type'] = mimetype
+        return_dict['data'] = encode(data, mimetype)
+        return return_dict
 
     def data(self):
-        pass
+        try:
+            return [y for x,y in self.items() if y['type'] = 'data' and 'value' in y][0]
+        except KeyError:
+            return None
 
     def vals(self, var_type, final=False):
         if final:
             self.assert_full()
         return {x:y['value'] for x,y in self.items() if y['type']==var_type and 'value' in y}
-
-    def populate(self, **kwargs):
-        '''This needs thinking out. Goal is to unify .add and .fill, with
-        ability to handle both variable declarations and settings at the same time.
-        Order of operations for partials in Python should mean that the latest-filled
-        copy of an argument will be used as part of kwargs. We do manually need to
-        load in full declarations first so that plain assignments end up with the
-        right type.'''
-        self.add(**{n: val for n, val in kwargs.items() if is_var(val)})
-        self.fill(**{n: val for n, val in kwargs.items() if not is_var(val)})
 
     def add(self, **kwargs):
         for name, var in kwargs.items():

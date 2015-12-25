@@ -1,4 +1,6 @@
 import json
+from urllib.parse import urlencode
+from functools import partial
 
 class JSONParser:
 
@@ -12,12 +14,22 @@ class JSONParser:
     def load(response):
         return json.loads(response.read().decode('utf-8'))
 
-class RawParser:
+class HTTPFormEncoder:
 
     @staticmethod
     def dump(python_object):
-        return python_object
+        return bytes(urlencode(python_object), encoding='utf-8')
 
-    @staticmethod
-    def load(response):
-        return response
+mimetypes = {
+    "application/json": JSONParser,
+    "x-www-form-unencoded": HTTPFormEncoder,
+}
+
+def code(action, data, mimetype):
+    if mimetype in mimetypes and action in mimetypes[mimetype].__dict__:
+        return getattr(mimetypes[mimetype], action)(data)
+    else:
+        raise Exception('Cannot parse mimetype {}'.format(mimetype))
+
+encode = partial(code, 'dump')
+decode = partial(code, 'load')

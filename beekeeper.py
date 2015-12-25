@@ -1,4 +1,3 @@
-import urllib.parse
 import copy
 from variables import Variables
 from hive import Hive
@@ -48,17 +47,14 @@ class Action:
         self.method = method
         self.vars = Variables(**variables)
         self.mimetype = mimetype
+        self.url = endpoint.url
 
     def variables(self):
         return self.endpoint.variables().add(**self.vars)
 
     def execute(self, *args, **kwargs):
         variables = self.variables().fill(*args, **kwargs)
-        url = self.url(variables)
-        method = self.method
-        headers = variables.headers()
-        data = variables.data()
-
+        
     def format(direction='both'):
         if self.mimetype and direction in self.mimetype:
             return self.mimetype[direction]
