@@ -39,6 +39,7 @@
     "objects": {
         "ObjectOne": {
             "description": "Short description string",
+            "id_variable": "Variable name for the unique id of the object",
             "actions": {
                 "create": {
                     "endpoint": "EndpointOne",

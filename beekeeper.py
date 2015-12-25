@@ -8,6 +8,7 @@ class Endpoint:
 
     def __init__(self, parent, path, methods=['GET'], variables={}, mimetype=None):
         self.parent = parent
+        self.path = path
         self.vars = Variables(**variables)
         self.methods = methods
         self.mimetype = mimetype
@@ -36,7 +37,7 @@ class APIObject:
         self.actions = actions
         self.id_variable = id_variable
         for name, action in self.actions.items():
-            setattr(self, name, parent.new_action(**action))
+            setattr(self, name, parent.new_action(**action).execute)
 
     def __getitem__(self, key):
         if "get" in self.actions and self.id_variable:
@@ -57,9 +58,9 @@ class Action:
 
     def execute(self, *args, **kwargs):
         variables = self.variables().fill(*args, **kwargs)
-        return decode(request(variables.render(self)),self.format(direction='returns'))
+        return decode(request(**variables.render(self)),self.format(direction='returns'))
         
-    def format(direction='both'):
+    def format(self, direction='both'):
         if self.mimetype and direction in self.mimetype:
             return self.mimetype[direction]
         else:
@@ -95,7 +96,7 @@ class API:
         return copy.deepcopy(self.settings)
 
     def add_endpoint(self, name, **kwargs):
-        self.endpoints[name] = Endpoint(self, path, **kwargs)
+        self.endpoints[name] = Endpoint(self, **kwargs)
 
     def add_object(self, name, obj):
         setattr(self, name, APIObject(self, **obj))

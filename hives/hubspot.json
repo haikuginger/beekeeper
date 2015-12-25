@@ -1,7 +1,7 @@
 {
     "name": "Hubspot",
     "root": "https://api.hubapi.com",
-    "format": "application/json",
+    "mimetype": "application/json",
     "variables": {
         "hapikey": {"type": "url_param"}
     },
@@ -27,6 +27,7 @@
     "objects": {
         "Contact": {
             "description": "An entity representing a single person",
+            "id_variable": "contact_id",
             "actions": {
                 "create": {
                     "endpoint": "CreateContact",
@@ -37,8 +38,7 @@
                     "method": "PUT"
                 },
                 "get": {
-                    "endpoint": "SingleContact",
-                    "method": "GET"
+                    "endpoint": "SingleContact"
                 }
             }
         }

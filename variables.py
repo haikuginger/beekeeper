@@ -34,7 +34,7 @@ class Variables(dict):
 
     def render(self, action):
         return_dict = {}
-        url = action.url().format(self.replacements(final=True))
+        url = action.url().format(**self.replacements(final=True))
         url += '?' + urlencode(self.params(final=True))
         return_dict['url'] = url
         return_dict['headers'] = self.headers(final=True)
@@ -49,7 +49,7 @@ class Variables(dict):
 
     def data(self):
         try:
-            return [y for x,y in self.items() if y['type'] = 'data' and 'value' in y][0]
+            return [y for x,y in self.items() if y['type'] == 'data' and 'value' in y][0]
         except KeyError:
             return None
 
