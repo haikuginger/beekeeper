@@ -31,15 +31,16 @@ class Endpoint:
 
 class APIObject:
 
-    def __init__(self, parent, obj):
-        self.description = obj['description']
-        self.actions = obj['actions']
+    def __init__(self, parent, actions, description=None, id_variable=None):
+        self.description = description
+        self.actions = actions
+        self.id_variable = id_variable
         for name, action in self.actions.items():
             setattr(self, name, parent.new_action(**action))
 
     def __getitem__(self, key):
-        if "get" in self.actions:
-            return self.get(key)
+        if "get" in self.actions and self.id_variable:
+            return self.get(**{self.id_variable:key})
         raise TypeError("Object cannot be addressed by ID")
 
 class Action:
@@ -97,7 +98,7 @@ class API:
         self.endpoints[name] = Endpoint(self, path, **kwargs)
 
     def add_object(self, name, obj):
-        setattr(self, name, APIObject(self, obj))
+        setattr(self, name, APIObject(self, **obj))
 
     def new_action(self, endpoint, **kwargs):
         return self.endpoints[endpoint].new_action(**kwargs)
