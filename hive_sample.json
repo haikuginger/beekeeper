@@ -43,8 +43,10 @@
                 "create": {
                     "endpoint": "EndpointOne",
                     "method": "POST",
-                    "takes": "application/json",
-                    "returns": "application/json"
+                    "mimetype": {
+                        "takes": "application/json",
+                        "returns": "application/json"
+                    }
                 },
                 "update": {
                     "endpoint": "EndpointTwo",

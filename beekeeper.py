@@ -1,10 +1,6 @@
 import urllib.parse
-import urllib.request
-import json
-import parsers
-from functools import partial
 import copy
-from variable_types import header, url_replacement, url_param, Variables, Variable
+from variable_types import Variables
 from hive import Hive
 
 class Endpoint:
@@ -21,14 +17,10 @@ class Endpoint:
     def url(self):
         return self.parent.root + self.path
 
-    def fill_vars(self, *args, **kwargs):
-        final_vars = copy.deepcopy(self.variables)
-        return final_vars.fill(*args, **kwargs)
-
-    def new_action(self, method, variables=None, mimetype=None):
+    def new_action(self, method='GET', **kwargs):
         if method not in self.methods:
             raise TypeError("{} not in valid method(s): {}.".format(method, self.methods))
-        return Action(self, method, variables)
+        return Action(self, method, **kwargs)
 
     def format(self):
         if self.mimetype:
@@ -51,10 +43,10 @@ class APIObject:
 
 class Action:
 
-    def __init__(self, endpoint, method, variables=None, mimetype=None):
+    def __init__(self, endpoint, method, variables={}, mimetype=None):
         self.endpoint = endpoint
         self.method = method
-        self.vars = variables
+        self.vars = Variables(**variables)
         self.mimetype = mimetype
 
     def variables(self):
@@ -66,7 +58,6 @@ class Action:
         method = self.method
         headers = variables.headers()
         data = variables.data()
-        return request(**req)
 
     def url(self, variables):
         replaced = self.endpoint.url().format(**variables.replacements(final=True))
@@ -84,24 +75,18 @@ class Action:
         else:
             return self.endpoint.format()
 
-
 class API:
-    
-    PARSERS = {
-        "application/json": parsers.JSONParser,
-        "application/octet-stream": parsers.RawParser
-    }
 
-    def __init__(self, root, variables, data_format, *args, **kwargs):
+    def __init__(self, root, variables, mimetype, *args, **kwargs):
         self.settings = Variables(**variables).fill(*args, **kwargs)
-        self.parser = API.PARSERS[data_format]
+        self.mimetype = mimetype
         self.root = root
         self.endpoints = {}
 
     @classmethod
     def from_hive(cls, hive, *args, **kwargs):
         h = hive
-        this_api = cls(h['root'], h['variables'], h['format'], *args, **kwargs)
+        this_api = cls(h['root'], h['variables'], h['mimetype'], *args, **kwargs)
         for name, ep in h['endpoints'].items():
             this_api.add_endpoint(name, **ep)
         for name, obj in h['objects'].items():
@@ -116,10 +101,6 @@ class API:
     def from_remote_hive(cls, url, *args, version=None, **kwargs):
         return cls.from_hive(Hive.from_url(url, version), *args, **kwargs)
 
-    @classmethod
-    def add_parser(cls, mimetype, parser):
-        cls.PARSERS[mimetype] = parser
-
     def variables(self):
         return copy.deepcopy(self.settings)
 
@@ -129,7 +110,10 @@ class API:
     def add_object(self, name, obj):
         setattr(self, name, APIObject(self, obj))
 
-    def new_action(self, endpoint, method='GET', variables=None, data_format=None):
-        return self.endpoints[endpoint].new_action(method, variables, mimetype=data_format)
+    def new_action(self, endpoint, **kwargs):
+        return self.endpoints[endpoint].new_action(**kwargs)
+
+    def format(self):
+        return self.mimetype
 
 
