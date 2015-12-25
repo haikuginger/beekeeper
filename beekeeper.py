@@ -7,21 +7,13 @@ import copy
 from variable_types import header, url_replacement, url_param, Variables, Variable
 from hive import Hive
 
-def request(url, method, headers, data, parser):
-    print(url)
-    final_request = urllib.request.Request(url=url,
-                                           data=parser.dump(data),
-                                           headers=headers,
-                                           method=method)
-    return parser.load(urllib.request.urlopen(final_request))
-
 class Endpoint:
 
-    def __init__(self, parent, parser, path, methods, variables):
+    def __init__(self, parent, path, methods=['GET'], variables={}, mimetype=None):
         self.parent = parent
-        self.vars = variables
+        self.vars = Variables(**variables)
         self.methods = methods
-        self.parser = parser
+        self.mimetype = mimetype
 
     def variables(self):
         return self.parent.variables().add(**self.vars)
@@ -29,52 +21,68 @@ class Endpoint:
     def url(self):
         return self.parent.root + self.path
 
-    def execute(self, method, *args, data=None, parser=None, **kwargs):
-        if method not in self.methods:
-            raise TypeError("{} not in valid method(s): {}.".format(method, self.methods))
-        final_vars = self.fill_vars(*args, **kwargs)
-        final_url = self.build_url(final_vars)
-        final_headers = final_vars.headers()
-        return request(final_url, method, final_headers, data, parser or self.parser)
-
     def fill_vars(self, *args, **kwargs):
         final_vars = copy.deepcopy(self.variables)
         return final_vars.fill(*args, **kwargs)
 
-    def new_action(self, method, **kwargs):
+    def new_action(self, method, variables=None, mimetype=None):
         if method not in self.methods:
             raise TypeError("{} not in valid method(s): {}.".format(method, self.methods))
-        return Action(self, method, **kwargs)
+        return Action(self, method, variables)
+
+    def format(self):
+        if self.mimetype:
+            return self.mimetype
+        else:
+            return self.parent.format()
 
 class APIObject:
 
-    def __init__(self, parent, actions):
-        for action, t in actions.items():
-            setattr(self, action, parent.get_method(t['endpoint'],t['method']))
+    def __init__(self, parent, obj):
+        self.description = obj['description']
+        self.actions = obj['actions']
+        for name, action in self.actions.items():
+            setattr(self, name, parent.new_action(**action))
+
+    def __getitem__(self, key):
+        if "get" in self.actions:
+            return self.get(key)
+        raise TypeError("Object cannot be addressed by ID")
 
 class Action:
 
-    def __init__(self, endpoint, method='GET', variables):
+    def __init__(self, endpoint, method, variables=None, mimetype=None):
         self.endpoint = endpoint
         self.method = method
         self.vars = variables
+        self.mimetype = mimetype
 
     def variables(self):
         return self.endpoint.variables().add(**self.vars)
 
     def execute(self, *args, **kwargs):
         variables = self.variables().fill(*args, **kwargs)
-        req = {}
-        req['url'] = self.url(variables)
-        req['method'] = self.method
-        req['headers'] = variables.headers()
-        req['parser'] = self.endpoint.parser
-        req['data'] = variables.data()
+        url = self.url(variables)
+        method = self.method
+        headers = variables.headers()
+        data = variables.data()
         return request(**req)
 
     def url(self, variables):
         replaced = self.endpoint.url().format(**variables.replacements(final=True))
         return replaced + '?' + urllib.parse.urlencode(variables.params())
+
+    def takes(self):
+        if self.mimetype and 'takes' in self.mimetype:
+            return self.mimetype['takes']
+        else:
+            return self.endpoint.format()
+
+    def returns(self):
+        if self.mimetype and 'returns' in self.mimetype:
+            return self.mimetype['returns']
+        else:
+            return self.endpoint.format()
 
 
 class API:
@@ -88,7 +96,6 @@ class API:
         self.settings = Variables(**variables).fill(*args, **kwargs)
         self.parser = API.PARSERS[data_format]
         self.root = root
-        self.new_endpoint = partial(Endpoint,root,self.settings,self.parser)
         self.endpoints = {}
 
     @classmethod
@@ -98,7 +105,7 @@ class API:
         for name, ep in h['endpoints'].items():
             this_api.add_endpoint(name, **ep)
         for name, obj in h['objects'].items():
-            this_api.add_object(name, obj['actions'])
+            this_api.add_object(name, obj)
         return this_api
 
     @classmethod
@@ -116,11 +123,13 @@ class API:
     def variables(self):
         return copy.deepcopy(self.settings)
 
-    def add_endpoint(self, name, path, variables, methods=['GET']):
-        self.endpoints[name] = Endpoint(self, self.parser, path, methods, **variables)
+    def add_endpoint(self, name, **kwargs):
+        self.endpoints[name] = Endpoint(self, path, **kwargs)
 
-    def add_object(self, name, actions):
-        setattr(self, name, APIObject(self, actions))
+    def add_object(self, name, obj):
+        setattr(self, name, APIObject(self, obj))
 
-    def get_method(self, endpoint_name, method):
-        return getattr(self.endpoints[endpoint_name], method)
+    def new_action(self, endpoint, method='GET', variables=None, data_format=None):
+        return self.endpoints[endpoint].new_action(method, variables, mimetype=data_format)
+
+

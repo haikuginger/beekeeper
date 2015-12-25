@@ -42,7 +42,9 @@
             "actions": {
                 "create": {
                     "endpoint": "EndpointOne",
-                    "method": "POST"
+                    "method": "POST",
+                    "takes": "application/json",
+                    "returns": "application/json"
                 },
                 "update": {
                     "endpoint": "EndpointTwo",

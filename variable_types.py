@@ -14,16 +14,6 @@ class Variable(dict):
             return True
         return False
 
-class header(Variable):
-
-    def __init__(self, **kwargs):
-        super().__init__('header', **kwargs)
-
-class url_replacement(Variable):
-
-    def __init__(self, **kwargs):
-        super().__init__('url_replacement', **kwargs)
-
 class url_param(Variable):
 
     def __init__(self, **kwargs):
@@ -37,7 +27,13 @@ class Variables(dict):
         self.headers = partial(self.vals, 'header')
         self.replacements = partial(self.vals, 'url_replacement')
         self.params = partial(self.vals, 'url_param')
-        self.data = partial(self.vals, 'data')
+        self.form = partial(self.vals, 'http_form')
+
+    def request(self, url, mime):
+        pass
+
+    def data(self):
+        pass
 
     def vals(self, var_type, final=False):
         if final:
