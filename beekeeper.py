@@ -17,13 +17,14 @@ def request(url, method, headers, data, parser):
 
 class Endpoint:
 
-    def __init__(self, root, inherited_values, parser, path, variables, methods):
-        self.url = root + path
-        self.variables = copy.deepcopy(inherited_values).add(**variables)
+    def __init__(self, parent, parser, path, methods, **kwargs):
+        self.parent = parent
+        self.variables = kwargs
         self.methods = methods
         self.parser = parser
-        for method in methods:
-            setattr(self, method, partial(self.execute, method))
+
+    def url(self):
+        return self.parent.root + self.path
 
     def execute(self, method, *args, data=None, parser=None, **kwargs):
         if method not in self.methods:
@@ -54,7 +55,7 @@ class APIObject:
 
 class Action:
 
-    def __init__(self, endpoint, method, **kwargs):
+    def __init__(self, endpoint, method='GET', **kwargs):
         self.endpoint = endpoint
         self.method = method
         self.variables = kwargs
@@ -99,7 +100,7 @@ class API:
         cls.PARSERS[mimetype] = parser
 
     def add_endpoint(self, name, path, variables, methods=['GET']):
-        self.endpoints[name] = self.new_endpoint(path, variables, methods)
+        self.endpoints[name] = Endpoint(self, self.parser, path, methods, **variables)
 
     def add_object(self, name, actions):
         setattr(self, name, APIObject(self, actions))
