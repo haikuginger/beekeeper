@@ -17,11 +17,14 @@ def request(url, method, headers, data, parser):
 
 class Endpoint:
 
-    def __init__(self, parent, parser, path, methods, **kwargs):
+    def __init__(self, parent, parser, path, methods, variables):
         self.parent = parent
-        self.variables = kwargs
+        self.vars = variables
         self.methods = methods
         self.parser = parser
+
+    def variables(self):
+        return self.parent.variables().add(**self.vars)
 
     def url(self):
         return self.parent.root + self.path
@@ -33,10 +36,6 @@ class Endpoint:
         final_url = self.build_url(final_vars)
         final_headers = final_vars.headers()
         return request(final_url, method, final_headers, data, parser or self.parser)
-
-    def build_url(self, variables):
-        replaced_url = self.url.format(**variables.replacements(final=True))
-        return replaced_url + "?" + urllib.parse.urlencode(variables.params())
 
     def fill_vars(self, *args, **kwargs):
         final_vars = copy.deepcopy(self.variables)
@@ -55,12 +54,27 @@ class APIObject:
 
 class Action:
 
-    def __init__(self, endpoint, method='GET', **kwargs):
+    def __init__(self, endpoint, method='GET', variables):
         self.endpoint = endpoint
         self.method = method
-        self.variables = kwargs
+        self.vars = variables
+
+    def variables(self):
+        return self.endpoint.variables().add(**self.vars)
 
     def execute(self, *args, **kwargs):
+        variables = self.variables().fill(*args, **kwargs)
+        req = {}
+        req['url'] = self.url(variables)
+        req['method'] = self.method
+        req['headers'] = variables.headers()
+        req['parser'] = self.endpoint.parser
+        req['data'] = variables.data()
+        return request(**req)
+
+    def url(self, variables):
+        replaced = self.endpoint.url().format(**variables.replacements(final=True))
+        return replaced + '?' + urllib.parse.urlencode(variables.params())
 
 
 class API:
@@ -98,6 +112,9 @@ class API:
     @classmethod
     def add_parser(cls, mimetype, parser):
         cls.PARSERS[mimetype] = parser
+
+    def variables(self):
+        return copy.deepcopy(self.settings)
 
     def add_endpoint(self, name, path, variables, methods=['GET']):
         self.endpoints[name] = Endpoint(self, self.parser, path, methods, **variables)

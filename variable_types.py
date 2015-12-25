@@ -37,6 +37,7 @@ class Variables(dict):
         self.headers = partial(self.vals, 'header')
         self.replacements = partial(self.vals, 'url_replacement')
         self.params = partial(self.vals, 'url_param')
+        self.data = partial(self.vals, 'data')
 
     def vals(self, var_type, final=False):
         if final:
