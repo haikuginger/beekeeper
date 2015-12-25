@@ -20,16 +20,16 @@ class HTTPFormEncoder:
     def dump(python_object):
         return bytes(urlencode(python_object), encoding='utf-8')
 
-mimetypes = {
-    "application/json": JSONParser,
-    "x-www-form-unencoded": HTTPFormEncoder,
-}
-
 def code(action, data, mimetype):
     if mimetype in mimetypes and action in mimetypes[mimetype].__dict__:
         return getattr(mimetypes[mimetype], action)(data)
     else:
         raise Exception('Cannot parse mimetype {}'.format(mimetype))
+
+mimetypes = {
+    "application/json": JSONParser,
+    "x-www-form-urlencoded": HTTPFormEncoder,
+}
 
 encode = partial(code, 'dump')
 decode = partial(code, 'load')

@@ -41,7 +41,7 @@ class Variables(dict):
         mimetype = action.format('takes')
         data = self.data()
         if self.form() and not data:
-            mimetype = 'x-www-form-urlencoded'
+            mimetype = 'application/x-www-form-urlencoded'
             data = self.form(final=True)
         return_dict['headers']['Content-Type'] = mimetype
         return_dict['data'] = encode(data, mimetype)

@@ -1,6 +1,8 @@
 import copy
 from variables import Variables
 from hive import Hive
+from parsers import decode
+from utils import request
 
 class Endpoint:
 
@@ -54,6 +56,7 @@ class Action:
 
     def execute(self, *args, **kwargs):
         variables = self.variables().fill(*args, **kwargs)
+        return decode(request(variables.render(self)),self.format(direction='returns'))
         
     def format(direction='both'):
         if self.mimetype and direction in self.mimetype:
