@@ -28,7 +28,7 @@ def code(action, data, mimetype):
 
 mimetypes = {
     "application/json": JSONParser,
-    "x-www-form-urlencoded": HTTPFormEncoder,
+    "application/x-www-form-urlencoded": HTTPFormEncoder,
 }
 
 encode = partial(code, 'dump')
