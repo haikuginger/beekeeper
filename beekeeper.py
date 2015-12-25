@@ -41,11 +41,26 @@ class Endpoint:
         final_vars = copy.deepcopy(self.variables)
         return final_vars.fill(*args, **kwargs)
 
+    def new_action(self, method, **kwargs):
+        if method not in self.methods:
+            raise TypeError("{} not in valid method(s): {}.".format(method, self.methods))
+        return Action(self, method, **kwargs)
+
 class APIObject:
 
     def __init__(self, parent, actions):
         for action, t in actions.items():
             setattr(self, action, parent.get_method(t['endpoint'],t['method']))
+
+class Action:
+
+    def __init__(self, endpoint, method, **kwargs):
+        self.endpoint = endpoint
+        self.method = method
+        self.variables = kwargs
+
+    def execute(self, *args, **kwargs):
+
 
 class API:
     
