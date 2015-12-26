@@ -34,7 +34,7 @@ def code(action, data, mimetype):
     if mimetype in mimetypes and action in mimetypes[mimetype].__dict__:
         return getattr(mimetypes[mimetype], action)(data)
     else:
-        raise Exception('Cannot parse mimetype {}'.format(mimetype))
+        raise Exception('Cannot parse MIME type {}'.format(mimetype))
 
 mimetypes = {
     "application/json": JSONParser,
