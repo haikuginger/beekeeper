@@ -20,6 +20,16 @@ class HTTPFormEncoder:
     def dump(python_object):
         return bytes(urlencode(python_object), encoding='utf-8')
 
+class PlainText:
+
+    @staticmethod
+    def dump(python_object):
+        return bytes(str(python_object), encoding='utf-8')
+
+    @staticmethod
+    def load(response):
+        return response.read().decode('utf-8')
+
 def code(action, data, mimetype):
     if mimetype in mimetypes and action in mimetypes[mimetype].__dict__:
         return getattr(mimetypes[mimetype], action)(data)
@@ -29,6 +39,7 @@ def code(action, data, mimetype):
 mimetypes = {
     "application/json": JSONParser,
     "application/x-www-form-urlencoded": HTTPFormEncoder,
+    "text/plain": PlainText
 }
 
 encode = partial(code, 'dump')
