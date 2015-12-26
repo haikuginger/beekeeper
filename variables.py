@@ -30,7 +30,6 @@ class Variables(dict):
         self.replacements = partial(self.vals, 'url_replacement')
         self.params = partial(self.vals, 'url_param')
         self.form = partial(self.vals, 'http_form')
-        self.data = partial(self.vals, 'data')
 
     def render(self, action):
         return_dict = {}
