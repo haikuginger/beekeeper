@@ -49,7 +49,7 @@ class Variables(dict):
     def data(self):
         try:
             return [y for x,y in self.items() if y['type'] == 'data' and 'value' in y][0]
-        except KeyError:
+        except:
             return None
 
     def vals(self, var_type, final=False):
