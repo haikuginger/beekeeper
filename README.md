@@ -75,7 +75,7 @@ There are several variable types with different considerations.
 
 *   `url_param`
 
-    `url_param` variables are appended to the end of the URL that's being requested; for example, https://company.tld/path?var1=value&var2=othervalue
+    `url_param` variables are appended to the end of the URL that's being requested; for example, `https://company.tld/path?var1=value&var2=othervalue`
 
 *   `url_replacement`
 
