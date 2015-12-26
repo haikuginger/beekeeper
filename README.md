@@ -89,6 +89,18 @@ There are several variable types with different considerations.
 
     `data` variables can be any Python object which can be encoded by the encoder associated with the MIME type for that action/endpoint. The encoder will read the MIME type associated with the request, and will encode the object appropriately and place it in the body of the request. For example, the variable might be set to a Python dictionary; if the relevant MIME type is "application/json", it would be parsed to a JSON-compatible series of bytes and placed in the body of the outgoing request.
 
+#####MIME type support
+
+Currently, support for different data formats is relatively minimal, but can be expanded by adding additional classes to `parsers.py`.
+
+Supported types:
+
+* `application/json`
+
+* `text/plain`
+
+* `application/x-www-form-urlencoded` (typically, not used directly; use the `http-form` variable type instead)
+
 ###endpoints
 
 `endpoints` is a required object that describes the different HTTP(s) URLs that are used as part of the API, and the variables and methods that can be used at that URL. Each `Endpoint` contains an optional `variables` key that will add to and override any values found at the API level. It also contains a required `path` key that completes the URL started by the API `root` key. Optionally, it contains a `methods` key that contains an array of the acceptable HTTP methods that can be used at that endpoint (defaulting to `GET`-only) and a `mimetype` key for use if that particular endpoint handles a different kind of data than the API as a whole.
