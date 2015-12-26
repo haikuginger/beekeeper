@@ -37,7 +37,51 @@ This abstraction allows developers to think more clearly about the actual object
 
 ## Hive structure
 
-Coming soon; for now, take a look at `hive_sample.json`, or the included basic hive files in `/hives/`. *Extremely* subject to change.
+Hives have several mandatory and optional nodes and subobjects that define the interaction with the remote API. Here's a basic rundown of what those look like; for a (completely non-functional) example, take a look at `hive_sample.json`. There are functional examples in the `hives` folder, but not all of them take advantage of all current features, and they may be out of date with the current hive specification.
+
+###name
+
+`name` is a plain string defining the name of the API. This is not currently used in beekeeper, but the potential applications include a hive file containing definitions for multiple APIs where namespaces for all APIs can be generated automatically.
+
+###root
+
+`root` is a plain string containing the base stub for the HTTP API. This is the fully-qualified domain name and subpath under which all resources for the entire API can be found. As an example, for Hubspot, this path is `https://api.hubapi.com`.
+
+###mimetype
+
+`mimetype` is a plain string containing the MIME type that most interactions with the API take place in. This can be overridden at lower levels, and so does not need to be universal across the board. However, it provides Beekeeper with information about how to translate data in most cases. One typical example string would be `application/json`.
+
+###versioning
+
+`versioning` is an optional object that enables you to define different versions of the API. In general, this shouldn't be necessary to use, as the whole point of beekeeper is to abstract away the specific implementation details of how a REST API works. However, if a feature is added or removed, it may be desirable to target a specific version of an API. To do this, you can pass the version you want to use as the `version` keyword argument to the `.from_hive_file()` or `.from_remote_hive()` constructor methods.
+
+The `versioning` object has two keys; a `version` key that has a plain string or integer that can be easily compared against the value passed to the aforementioned constructors, and an optional "previousVersions" array that contains an arbitrary number of `version` objects.
+
+Each `version` object contains two required keys (a `version` key similar to the one in the main `versioning` object, and a `location` key that provides a full URL that can be used to download the relevant hive file). It may also contain an optional `expires` key in ISO 8601 format, which declares if the API corresponding to that hive has a planned deprecation date from which it will no longer be available.
+
+###variables
+
+`variables` is an optional object containing any number of individual `variable` objects, keyed by name. Each `variable` object has a mandatory `type` key, corresponding to one of the valid variable types, and an optional `value` key, if the value for that variable should be kept static across all instantiations of this particular API. Variables that are defined at the API level must be filled in during initialization of the API by passing variables as arguments (if only one value is needed) or keyword arguments with the argument name corresponding to the variable name. Each `variable` may also have an `optional` key with a Boolean value. If a variable has `optional: true` set, then it will be ignored at execution time if a value is missing. Otherwise, an exception will be raised that a required variable is missing a value.
+
+Variables at the API level will be applied to all requests made by the API, but can be overridden by being redefined at a lower level, or by passing a keyword argument with the relevant name during the execution of a call.
+
+###endpoints
+
+`endpoints` is a required object that describes the different HTTP(s) URLs that are used as part of the API, and the variables and methods that can be used at that URL. Each `Endpoint` contains an optional `variables` key that will add to and override any values found at the API level. It also contains a required `path` key that completes the URL started by the API `root` key. Optionally, it contains a `methods` key that contains an array of the acceptable HTTP methods that can be used at that endpoint (defaulting to `GET`-only) and a `mimetype` key for use if that particular endpoint handles a different kind of data than the API as a whole.
+
+###objects
+
+`objects` is a required object that describes the different resources available via the API, and how the different actions that can be taken on them map onto different endpoints and methods. For example, a `Contact` object might have `create`, `update`, `get`, and `delete` actions. The `update`, `get`, and `delete` actions might map onto one endpoint with the `PUT`, `GET`, and `DELETE` HTTP methods, while the `create` action might map onto another endpoint with the `POST` HTTP method. `objects` helps abstract this to help you keep track more easily without worrying about implementation details.
+
+`objects` contains any number of `APIObject` objects, keyed by name. Each of those `APIObject`s contains a `description` key, which isn't currently functional, but is useful for documentation purposes. Each may also contain an optional `id_variable` key, the value of which should be equal to the name of the variable which, if present, is the unique key of each record. This allows us to do subscription of objects by ID - for example, `Hubspot.Contacts[39410]`, rather than `Hubspot.Contacts.get(contact_id=39410)`.
+
+####actions
+
+`actions` is the key element of each `APIObject`. `actions` is an object that contains an arbitrary number of `action` objects related to that `APIObject`, keyed by name. Each `action` contains an `endpoint` key, the value of which must relate to one of the previously-defined `Endpoint` objects, and one of the HTTP methods available on that `Endpoint`.
+
+Each `action` may also optionally contain a `mimetype` object and a `variables` object. The `variables` object behaves similarly to those places at the `Endpoint` and `API` levels; it will add to and override any values defined at a higher level, and will be filled by arguments and keyword arguments presented during execution.
+
+The optional `mimetype` object may contain any or none of three keys; `takes`, `returns`, and `both`. This is a higher-detail version of the `mimetype` key present on the `API` and `Endpoint`. `takes` defines the type of data the API expects to receive from this action, `returns` defines the type of data that the API will return from this action, and `both` defines the expected data in both directions. This key is wholly optional and only necessary if the datatype in at least one direction differs from how it's defined at the `Endpoint` or `API` level.
 
 ## Notes
 

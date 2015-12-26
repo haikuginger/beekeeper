@@ -1,6 +1,7 @@
 {
     "name": "SystemName",
     "root": "url_here",
+    "mimetype": "application/json",
     "versioning": {
         "version": 8,
         "previousVersions": [
@@ -47,6 +48,12 @@
                     "mimetype": {
                         "takes": "application/json",
                         "returns": "application/json"
+                    },
+                    "variables": {
+                        "this_variable": {
+                            "type": "url_param",
+                            "value": "whatever"
+                        }
                     }
                 },
                 "update": {
