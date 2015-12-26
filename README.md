@@ -101,7 +101,7 @@ There are several variable types with different considerations.
 
 ####actions
 
-`actions` is the key element of each `APIObject`. `actions` is an object that contains an arbitrary number of `action` objects related to that `APIObject`, keyed by name. Each `action` contains an `endpoint` key, the value of which must relate to one of the previously-defined `Endpoint` objects, and one of the HTTP methods available on that `Endpoint`.
+`actions` is the key element of each `APIObject`. `actions` is an object that contains an arbitrary number of `action` objects related to that `APIObject`, keyed by name. Each `action` contains an `endpoint` key, the value of which must relate to one of the previously-defined `Endpoint` objects, and a `method` key that contains one of the HTTP methods available on that `Endpoint`. If `method` isn't present, the method is assumed to be `GET`.
 
 Each `action` may also optionally contain a `mimetype` object and a `variables` object. The `variables` object behaves similarly to those places at the `Endpoint` and `API` levels; it will add to and override any values defined at a higher level, and will be filled by arguments and keyword arguments presented during execution.
 
