@@ -65,6 +65,30 @@ Each `version` object contains two required keys (a `version` key similar to the
 
 Variables at the API level will be applied to all requests made by the API, but can be overridden by being redefined at a lower level, or by passing a keyword argument with the relevant name during the execution of a call.
 
+####Variable types
+
+There are several variable types with different considerations.
+
+*   `header`
+
+    `header` variables are sent as HTTP headers.
+
+*   `url_param`
+
+    `url_param` variables are appended to the end of the URL that's being requested; for example, https://company.tld/path?var1=value&var2=othervalue
+
+*   `url_replacement`
+
+    `url_replacement` variables fill "holes" in incomplete URLs. For example, the path for an endpoint might be `/contacts/{contact_id}`. In that case, setting a `url_replacement` variable with name `contact_id` to a value of `123` would result in a path to be appended to the root of `/contacts/123`.
+
+*   `http_form`
+
+    `http_form` variables are similar to `url_param` variables, however, they're sent to the server as part of the body of the request, rather than within the URL. This is the method by which HTTP forms are typically sent. Due to the way `http_form` variables are sent, they cannot be sent simultaneously with other data.
+
+*   `data`
+
+    `data` variables can be any Python object which can be encoded by the encoder associated with the MIME type for that action/endpoint. The encoder will read the MIME type associated with the request, and will encode the object appropriately and place it in the body of the request. For example, the variable might be set to a Python dictionary; if the relevant MIME type is "application/json", it would be parsed to a JSON-compatible series of bytes and placed in the body of the outgoing request.
+
 ###endpoints
 
 `endpoints` is a required object that describes the different HTTP(s) URLs that are used as part of the API, and the variables and methods that can be used at that URL. Each `Endpoint` contains an optional `variables` key that will add to and override any values found at the API level. It also contains a required `path` key that completes the URL started by the API `root` key. Optionally, it contains a `methods` key that contains an array of the acceptable HTTP methods that can be used at that endpoint (defaulting to `GET`-only) and a `mimetype` key for use if that particular endpoint handles a different kind of data than the API as a whole.
