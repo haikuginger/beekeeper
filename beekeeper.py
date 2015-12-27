@@ -6,12 +6,12 @@ from utils import request
 
 class Endpoint:
 
-    def __init__(self, parent, path, methods=['GET'], variables={}, mimetype=None):
+    def __init__(self, parent, path, **kwargs):
         self.parent = parent
         self.path = path
-        self.vars = Variables(**variables)
-        self.methods = methods
-        self.mimetype = mimetype
+        self.vars = Variables(**kwargs.get('variables', {}))
+        self.methods = kwargs.get('methods', ['GET'])
+        self.mimetype = kwargs.get('mimetype', None)
 
     def variables(self):
         return self.parent.variables().add(**self.vars)
@@ -32,10 +32,10 @@ class Endpoint:
 
 class APIObject:
 
-    def __init__(self, parent, actions, description=None, id_variable=None):
-        self.description = description
+    def __init__(self, parent, actions, **kwargs):
+        self.description = kwargs.get('description', None)
         self.actions = actions
-        self.id_variable = id_variable
+        self.id_variable = kwargs.get('id_variable', None)
         for name, action in self.actions.items():
             setattr(self, name, parent.new_action(**action).execute)
 
@@ -46,11 +46,11 @@ class APIObject:
 
 class Action:
 
-    def __init__(self, endpoint, method, variables={}, mimetype=None):
+    def __init__(self, endpoint, method, **kwargs):
         self.endpoint = endpoint
         self.method = method
-        self.vars = Variables(**variables)
-        self.mimetype = mimetype
+        self.vars = Variables(**kwargs.get('variables', {}))
+        self.mimetype = kwargs.get('mimetype', None)
         self.url = endpoint.url
 
     def variables(self):
@@ -59,7 +59,7 @@ class Action:
     def execute(self, *args, **kwargs):
         variables = self.variables().fill(*args, **kwargs)
         return decode(request(**variables.render(self)),self.format(direction='returns'))
-        
+
     def format(self, direction='both'):
         if self.mimetype and direction in self.mimetype:
             return self.mimetype[direction]
@@ -76,11 +76,10 @@ class API:
 
     @classmethod
     def from_hive(cls, hive, *args, **kwargs):
-        h = hive
-        this_api = cls(h['root'], h['variables'], h['mimetype'], *args, **kwargs)
-        for name, ep in h['endpoints'].items():
-            this_api.add_endpoint(name, **ep)
-        for name, obj in h['objects'].items():
+        this_api = cls(hive['root'], hive['variables'], hive['mimetype'], *args, **kwargs)
+        for name, endpoint in hive['endpoints'].items():
+            this_api.add_endpoint(name, **endpoint)
+        for name, obj in hive['objects'].items():
             this_api.add_object(name, obj)
         return this_api
 

@@ -12,7 +12,7 @@ class Variable(dict):
         self['type'] = type
 
     def is_filled(self):
-        if 'value' in self or ('optional' in self and self['optional']):
+        if 'value' in self or self.get('optional', False):
             return True
         return False
 
@@ -47,10 +47,13 @@ class Variables(dict):
         return return_dict
 
     def data(self):
-        try:
-            return [y for x,y in self.items() if y['type'] == 'data' and 'value' in y][0]
-        except:
-            return None
+        data = [y for x,y in self.items() if y['type'] == 'data' and 'value' in y][0]
+        if data:
+            if len(data) == 1:
+                return data[0]
+            else:
+                raise TypeError("Only one data-type variable can have a value")
+        return None
 
     def vals(self, var_type, final=False):
         if final:
