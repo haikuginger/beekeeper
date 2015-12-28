@@ -47,7 +47,7 @@ class Variables(dict):
         return return_dict
 
     def data(self):
-        data = [y for x,y in self.items() if y['type'] == 'data' and 'value' in y][0]
+        data = [y for x,y in self.vals('data').items()]
         if data:
             if len(data) == 1:
                 return data[0]
