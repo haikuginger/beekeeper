@@ -7,9 +7,9 @@ def is_var(var):
 
 class Variable(dict):
 
-    def __init__(self, type, **kwargs):
+    def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self['type'] = type
+        self['type'] = kwargs.get('type', 'url_param')
 
     def is_filled(self):
         if 'value' in self or self.get('optional', False):
@@ -19,7 +19,7 @@ class Variable(dict):
 class url_param(Variable):
 
     def __init__(self, **kwargs):
-        super().__init__('url_param', **kwargs)
+        super().__init__(type='url_param', **kwargs)
 
 class Variables(dict):
 

@@ -1,63 +1,46 @@
 {
     "name": "Wikipedia",
     "root": "https://en.wikipedia.org",
-    "format": "application/json",
-    "versioning": {
-        "version": 1
-    },
+    "mimetype": "application/json",
     "variables": {
         "format": {
-            "type": "url_param",
             "value": "json"
         },
         "action": {
-            "type": "url_param",
             "value": "query"
         }
     },
     "endpoints": {
-        "ArticleByName": {
+        "API": {
             "path": "/w/api.php",
-            "methods": [
-                "GET"
-            ],
             "variables": {
-                "titles" : {"type": "url_param"},
-                "prop" : {
-                    "type": "url_param",
-                    "value": "revisions"
-                },
-                "rvprop": {
-                    "type": "url_param",
-                    "value": "content"
-                }
-            }
-        },
-        "ArticleCategories": {
-            "path": "/w/api.php",
-            "methods": [
-                "GET"
-            ],
-            "variables": {
-                "titles": {"type": "url_param"},
-                "prop": {
-                    "type": "url_param",
-                    "value": "categories"
-                }
+                "titles": {}
             }
         }
     },
     "objects": {
-        "Article": {
+        "Articles": {
             "description": "A single Wikipedia article",
+            "id_variable": "titles",
             "actions": {
                 "get": {
-                    "endpoint": "ArticleByName",
-                    "method": "GET"
+                    "endpoint": "API",
+                    "variables": {
+                        "prop": {
+                            "value": "revisions"
+                        },
+                        "rvprop": {
+                            "value": "content"
+                        }
+                    }
                 },
                 "categories": {
-                    "endpoint": "ArticleCategories",
-                    "method": "GET"
+                    "endpoint": "API",
+                    "variables": {
+                        "prop": {
+                            "value": "categories"
+                        }
+                    }
                 }
             }
         }
