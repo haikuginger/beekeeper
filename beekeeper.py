@@ -39,7 +39,7 @@ class Endpoint:
         Create a new Action linked to this endpoint with the given args
         """
         if method not in self.methods:
-            raise TypeError("{} not in valid method(s): {}.".format(method, self.methods))
+            raise TypeError('{} not in valid method(s): {}.'.format(method, self.methods))
         return Action(self, method, **kwargs)
 
     def format(self):
@@ -72,9 +72,9 @@ class APIObject:
         Allows us to subscript, dictionary-style, on the object if we
         know what the object's unique key is.
         """
-        if 'get' in self.actions and self.id_variable:
+        if self.key_action in self.actions and self.id_variable:
             return getattr(self, self.key_action)(**{self.id_variable:key})
-        raise TypeError("Object cannot be addressed by ID")
+        raise TypeError('Object cannot be addressed by ID')
 
     def defined_actions(self):
         """
@@ -86,8 +86,8 @@ class APIObject:
         """
         Add a single Action to the APIObject
         """
-        self.actions[name] = action
-        setattr(self, name, parent.new_action(**action).execute)
+        self.actions[name] = parent.new_action(**action)
+        setattr(self, name, self.actions[name].execute)
 
 class Action:
 

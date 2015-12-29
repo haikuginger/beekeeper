@@ -52,7 +52,7 @@ class Variables(dict):
             if len(data) == 1:
                 return data[0]
             else:
-                raise TypeError("Only one data-type variable can have a value")
+                raise TypeError('Only one data-type variable can have a value')
         return None
 
     def vals(self, var_type, final=False):

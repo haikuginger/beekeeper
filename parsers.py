@@ -18,13 +18,17 @@ class HTTPFormEncoder:
 
     @staticmethod
     def dump(python_object):
-        return bytes(urlencode(python_object), encoding='utf-8')
+        if python_object:
+            return bytes(urlencode(python_object), encoding='utf-8')
+        return None
 
 class PlainText:
 
     @staticmethod
     def dump(python_object):
-        return bytes(str(python_object), encoding='utf-8')
+        if python_object:
+            return bytes(str(python_object), encoding='utf-8')
+        return None
 
     @staticmethod
     def load(response):
@@ -37,9 +41,10 @@ def code(action, data, mimetype):
         raise Exception('Cannot parse MIME type {}'.format(mimetype))
 
 mimetypes = {
-    "application/json": JSONParser,
-    "application/x-www-form-urlencoded": HTTPFormEncoder,
-    "text/plain": PlainText
+    'application/json': JSONParser,
+    'application/x-www-form-urlencoded': HTTPFormEncoder,
+    'text/plain': PlainText,
+    'text/html': PlainText
 }
 
 encode = partial(code, 'dump')
