@@ -5,20 +5,28 @@ from parsers import encode
 def is_var(var):
     return isinstance(var, Variable)
 
+def merge(var1, var2):
+    """
+    Take two copies of a variable and reconcile them. var1 is assumed
+    to be the higher-level variable, and so will be overridden by var2
+    where such becomes necessary.
+    """
+    out = {}
+    out['value'] = var2.get('value', var1.get('value', None))
+    out['types'] = list(set(var1['types'],var2['types']))
+    out['optional'] = var2.get('optional', False)
+    
+
 class Variable(dict):
 
     def __init__(self, **kwargs):
-        tree = kwargs
-        types = tree.get('types', [])
-        if not types:
-            types.append(tree.get('type', 'url_param'))
-        tree['types'] = types
-        if 'type' in tree:
-            del tree['type']
-        super().__init__(**tree)
+        kwargs['types'] = kwargs.get('types', [])
+        if not kwargs['types']:
+            kwargs['types'].append(kwargs.get('type', 'url_param'))
+        super().__init__(**kwargs)
 
     def is_filled(self):
-        if 'value' in self or self.get('optional', False):
+        if self.has_value or self.get('optional', False):
             return True
         return False
 
@@ -27,10 +35,10 @@ class Variable(dict):
             return True
         return False
 
-class url_param(Variable):
-
-    def __init__(self, **kwargs):
-        super().__init__(types=['url_param'], **kwargs)
+    def has_value(self):
+        if self.get('value', None) is not None:
+            return True
+        return False
 
 class Variables(dict):
 
@@ -69,11 +77,14 @@ class Variables(dict):
     def vals(self, var_type, final=False):
         if final:
             self.assert_full()
-        return {x:y['value'] for x,y in self.items() if y.has_type(var_type) and 'value' in y}
+        return {x:y['value'] for x,y in self.items() if y.has_type(var_type) and y.has_value()}
 
     def add(self, **kwargs):
         for name, var in kwargs.items():
-            self[name] = Variable(**var)
+            if name in self:
+                self[name] = merge(self[name], var)
+            else:
+                self[name] = Variable(**var)
         return self
 
     def fill_arg(self, *args):
@@ -99,7 +110,7 @@ class Variables(dict):
         if varname in self:
             self[varname]['value'] = value
         else:
-            self[varname] = url_param(value=value)
+            self[varname] = Variable(value=value)
 
     def missing_vars(self):
         return [x for x,y in self.items() if not y.is_filled()]
