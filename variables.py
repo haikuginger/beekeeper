@@ -26,7 +26,7 @@ class Variable(dict):
         super().__init__(**kwargs)
 
     def is_filled(self):
-        if self.has_value or self.get('optional', False):
+        if self.has_value() or self.get('optional', False):
             return True
         return False
 
