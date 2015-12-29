@@ -8,18 +8,29 @@ def is_var(var):
 class Variable(dict):
 
     def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self['type'] = kwargs.get('type', 'url_param')
+        tree = kwargs
+        types = tree.get('types', [])
+        if not types:
+            types.append(tree.get('type', 'url_param'))
+        tree['types'] = types
+        if 'type' in tree:
+            del tree['type']
+        super().__init__(**tree)
 
     def is_filled(self):
         if 'value' in self or self.get('optional', False):
             return True
         return False
 
+    def has_type(self, var_type):
+        if var_type in self['types']:
+            return True
+        return False
+
 class url_param(Variable):
 
     def __init__(self, **kwargs):
-        super().__init__(type='url_param', **kwargs)
+        super().__init__(types=['url_param'], **kwargs)
 
 class Variables(dict):
 
@@ -58,7 +69,7 @@ class Variables(dict):
     def vals(self, var_type, final=False):
         if final:
             self.assert_full()
-        return {x:y['value'] for x,y in self.items() if y['type']==var_type and 'value' in y}
+        return {x:y['value'] for x,y in self.items() if y.has_type(var_type) and 'value' in y}
 
     def add(self, **kwargs):
         for name, var in kwargs.items():
