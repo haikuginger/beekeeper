@@ -4,10 +4,10 @@ to directly interface between the developer and the remote API.
 """
 
 import copy
-from variables import Variables
-from hive import Hive
-from parsers import decode
-from utils import request
+from .variables import Variables
+from .hive import Hive
+from .parsers import decode
+from .utils import request
 
 class Endpoint:
 

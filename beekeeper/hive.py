@@ -1,4 +1,4 @@
-import utils
+from .utils import download_as_json
 import json
 
 class Hive(dict):
@@ -24,7 +24,7 @@ class Hive(dict):
         """
         Create a Hive object based on JSON located at a remote URL
         """
-        return cls(**utils.download_as_json(url)).from_version(version)
+        return cls(**download_as_json(url)).from_version(version)
 
     def from_version(self, version):
         """

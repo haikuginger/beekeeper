@@ -1,6 +1,6 @@
 from functools import partial
 from urllib.parse import urlencode
-from parsers import encode
+from .parsers import encode
 
 def is_var(var):
     return isinstance(var, Variable)
