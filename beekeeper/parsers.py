@@ -19,10 +19,9 @@ class Response:
         return 'utf-8'
 
     def cookies(self):
-        return self.headers['Set-Cookie'].split('; ')
-
-    def headers(self):
-        return self.headers
+        if self.headers.get('Set-Cookie', False)
+            return self.headers.get('Set-Cookie').split('; ')
+        return []
 
     def read(self):
         return decode(self.data, self.mimetype())
