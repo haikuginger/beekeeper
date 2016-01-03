@@ -2,6 +2,31 @@ import json
 from urllib.parse import urlencode
 from functools import partial
 
+class Response:
+
+    def __init__(self, response):
+        self.headers = dict(response.headers)
+        self.data = response.read().decode(self.encoding())
+
+    def mimetype(self):
+        if ';' in self.headers['Content-Type']:
+            return self.headers['Content-Type'].split(';')[0]
+        return self.headers['Content-Type']
+
+    def encoding(self):
+        if 'charset=' in self.headers['Content-Type']:
+            return self.headers['Content-Type'].split('charset=')[1]
+        return 'utf-8'
+
+    def cookies(self):
+        return self.headers['Set-Cookie'].split('; ')
+
+    def headers(self):
+        return self.headers
+
+    def read(self):
+        return decode(self.data, self.mimetype())
+
 class JSONParser:
 
     @staticmethod
@@ -12,7 +37,7 @@ class JSONParser:
 
     @staticmethod
     def load(response):
-        return json.loads(response.read().decode('utf-8'))
+        return json.loads(response)
 
 class HTTPFormEncoder:
 
@@ -32,13 +57,7 @@ class PlainText:
 
     @staticmethod
     def load(response):
-        return response.read().decode('utf-8')
-
-def code(action, data, mimetype):
-    if mimetype in mimetypes and action in mimetypes[mimetype].__dict__:
-        return getattr(mimetypes[mimetype], action)(data)
-    else:
-        raise Exception('Cannot parse MIME type {}'.format(mimetype))
+        return response
 
 mimetypes = {
     'application/json': JSONParser,
@@ -46,6 +65,12 @@ mimetypes = {
     'text/plain': PlainText,
     'text/html': PlainText
 }
+
+def code(action, data, mimetype):
+    if mimetype in mimetypes and action in mimetypes[mimetype].__dict__:
+        return getattr(mimetypes[mimetype], action)(data)
+    else:
+        raise Exception('Cannot parse MIME type {}'.format(mimetype))
 
 encode = partial(code, 'dump')
 decode = partial(code, 'load')

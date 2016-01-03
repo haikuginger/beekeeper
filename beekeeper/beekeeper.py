@@ -6,7 +6,7 @@ to directly interface between the developer and the remote API.
 import copy
 from .variables import Variables
 from .hive import Hive
-from .parsers import decode
+from .parsers import Response
 from .utils import request
 
 class Endpoint:
@@ -116,7 +116,7 @@ class Action:
         the MIME type defined in the hive.
         """
         variables = self.variables().fill(*args, **kwargs)
-        return decode(request(**variables.render(self)), self.format(direction='returns'))
+        return Response(request(**variables.render(self)))
 
     def format(self, direction='both'):
         """
