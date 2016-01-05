@@ -13,15 +13,16 @@
         ]
     },
     "variables": {
-        "Authorization": {
-            "type": "header"
+        "username": {
+            "type": "http_basic_auth"
         },
-
+        "password": {
+            "type": "http_basic_auth"
+        },
         "subdomain": {
             "type": "url_replacement",
             "value": "my_subdomain"
         },
-
         "apikey": {
             "type": "url_param"
         }
@@ -35,6 +36,13 @@
                 "PUT"
             ],
             "variables": {}
+        },
+        "EndpointTwo": {
+            "path": "other_url_extension",
+            "methods": [
+                "PUT",
+                "GET"
+            ]
         }
     },
     "objects": {
@@ -66,11 +74,9 @@
                 },
                 "get": {
                     "endpoint": "EndpointTwo",
-                    "method": "GET"
                 },
                 "list": {
                     "endpoint": "EndpointThree",
-                    "method": "GET"
                 }
             }
         }
