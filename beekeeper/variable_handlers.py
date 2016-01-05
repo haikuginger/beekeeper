@@ -1,46 +1,44 @@
-from .parsers import decode, encode
-from .variables import Variables
-from .utils import request
+from .data_handlers import encode
+from functools import partial
+import base64
 
-class Request:
+def identity(var_type, **values):
+    for name, value in values.items():
+        yield dict(type=var_type, name=name, value=value)
 
-    def __init__(self, action, variables):
-        self.data = None
-        self.action = action
-        self.variables = variables
+def render_data(**data):
+    if len(data) > 1:
+        raise Exception('render_data can only receive a single data object')
+    else:
+        for name, val in data.items():
+            yield encode(val['value', val['mimetype']])
 
-    def render_variables(self, **kwargs):
-        return self.variables.render(self.action)
-        
-    def send(self):
-        return Response(self.action, request(**self.render_variables()))
+def http_form(**values):
+    form = {'x': {'value': values, 'mimetype': 'application/x-www-form-urlencoded'}}
+    yield render('data', **form)
 
-class Response:
+def basic_auth(**values):
+    username = values.get('username', '')
+    password = values.get('password', '')
+    authinfo = base64.b64encode("{}:{}".format(username, password).encode('utf-8'))
+    authinfo = 'Basic {}'.format(authinfo.decode('utf-8'))
+    return header(Authorization=authinfo)
 
-    def __init__(self, action, response):
-        self.action = action
-        self.headers = dict(response.headers)
-        self.data = response.read().decode(self.encoding())
-        self.response_code = response.status
-        self.response_message = response.reason
+def empty(**values):
+    return []
 
-    def mimetype(self):
-        if ';' in self.headers['Content-Type']:
-            return self.headers['Content-Type'].split(';')[0]
-        return self.headers.get('Content-Type', self.format())
+header = partial(identity, 'header')
+url_param = partial(identity, 'url_param')
 
-    def format(self):
-        return self.action.format(direction='returns')
+variable_types = {
+    'http_form': http_form,
+    'header': header,
+    'data': render_data,
+    'url_replacement': empty,
+    'url_param': url_param,
+    'http_basic_auth': basic_auth
+}
 
-    def encoding(self):
-        if 'charset=' in self.headers['Content-Type']:
-            return self.headers['Content-Type'].split('charset=')[1].split(';')[0]
-        return 'utf-8'
-
-    def cookies(self):
-        if self.headers.get('Set-Cookie', False):
-            return self.headers.get('Set-Cookie').split('; ')
-        return []
-
-    def read(self):
-        return decode(self.data, self.mimetype())
+def render(var_type, **values):
+    if var_type in variable_types:
+        return variable_types[var_type](**values)
