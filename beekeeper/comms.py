@@ -44,7 +44,6 @@ class Request:
         
         print('Data:\n{}'.format(str(self.output['data'])))
 
-        
     def send(self):
         if self.verbose:
             self.print_out()
@@ -58,8 +57,10 @@ class Request:
             'header': self.set_url_param,
             'data': self.set_data
         }
-        assert variable['type'] in method_map
-        method_map[variable['type']](variable)
+        if variable['type'] in method_map:
+            method_map[variable['type']](variable)
+        else:
+            raise Exception('Cannot handle final variables of type {}'.format(variable['type']))
 
     def set_header(self, header):
         self.output['headers'][header['name']] = header['value']
