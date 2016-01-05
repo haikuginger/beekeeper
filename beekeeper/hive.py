@@ -1,4 +1,4 @@
-from .utils import download_as_json
+from .comms import download_as_json
 import json
 
 class Hive(dict):

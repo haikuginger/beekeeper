@@ -49,7 +49,7 @@ Hives have several mandatory and optional nodes and subobjects that define the i
 
 ###mimetype
 
-`mimetype` is a plain string containing the MIME type that most interactions with the API take place in. This can be overridden at lower levels, and so does not need to be universal across the board. However, it provides Beekeeper with information about how to translate data in most cases. One typical example string would be `application/json`.
+`mimetype` is a plain string containing the MIME type that most interactions with the API take place in. This is used to parse responses from servers when we're not able to automatically extract a Content-Type header.
 
 ###versioning
 
@@ -87,7 +87,11 @@ There are several variable types with different considerations.
 
 *   `data`
 
-    `data` variables can be any Python object which can be encoded by the encoder associated with the MIME type for that action/endpoint. The encoder will read the MIME type associated with the request, and will encode the object appropriately and place it in the body of the request. For example, the variable might be set to a Python dictionary; if the relevant MIME type is "application/json", it would be parsed to a JSON-compatible series of bytes and placed in the body of the outgoing request.
+    `data` variables can be any Python object which can be encoded by the encoder associated with the MIME type for that variable, set by the `mimetype` key in the object for that variable in the hive.
+
+*   `http_basic_auth`
+    
+    `http_basic_auth` variables are translated into standard Authorization headers. Two variables of this type are generally needed; a `username` variable and a `password` variable. If one of these variables is not present, it will be treated as empty when  building the Authorization header.
 
 #####MIME type support
 
@@ -98,6 +102,8 @@ Supported types:
 * `application/json`
 
 * `text/plain`
+
+* `text/html`
 
 * `application/x-www-form-urlencoded` (typically, not used directly; use the `http-form` variable type instead)
 
