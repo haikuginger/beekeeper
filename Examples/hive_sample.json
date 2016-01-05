@@ -53,6 +53,10 @@
                         "this_variable": {
                             "type": "url_param",
                             "value": "whatever"
+                        },
+                        "data_variable": {
+                            "type": "data",
+                            "mimetype": "application/json"
                         }
                     }
                 },
