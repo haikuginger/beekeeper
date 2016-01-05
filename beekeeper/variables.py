@@ -13,7 +13,7 @@ def merge(var1, var2):
     """
     out = {}
     out['value'] = var2.get('value', var1.get('value', None))
-    out['types'] = list(set(var1['types'],var2['types']))
+    out['types'] = list(set(var1['types'] + var2['types']))
     out['optional'] = var2.get('optional', False)
     
 
@@ -39,6 +39,9 @@ class Variable(dict):
         if self.get('value', None) is not None:
             return True
         return False
+
+    def types(self):
+        return self['types']
 
 class Variables(dict):
 
@@ -73,6 +76,13 @@ class Variables(dict):
             else:
                 raise TypeError('Only one data-type variable can have a value')
         return None
+
+    def types(self):
+        types = set()
+        for name, var in self.items():
+            for each_type in var.types():
+                types.add(each_type)
+        return list(types)
 
     def vals(self, var_type, final=False):
         if final:

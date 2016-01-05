@@ -2,30 +2,6 @@ import json
 from urllib.parse import urlencode
 from functools import partial
 
-class Response:
-
-    def __init__(self, response):
-        self.headers = dict(response.headers)
-        self.data = response.read().decode(self.encoding())
-
-    def mimetype(self):
-        if ';' in self.headers['Content-Type']:
-            return self.headers['Content-Type'].split(';')[0]
-        return self.headers['Content-Type']
-
-    def encoding(self):
-        if 'charset=' in self.headers['Content-Type']:
-            return self.headers['Content-Type'].split('charset=')[1]
-        return 'utf-8'
-
-    def cookies(self):
-        if self.headers.get('Set-Cookie', False)
-            return self.headers.get('Set-Cookie').split('; ')
-        return []
-
-    def read(self):
-        return decode(self.data, self.mimetype())
-
 class JSONParser:
 
     @staticmethod
