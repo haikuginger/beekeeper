@@ -11,7 +11,12 @@
             "methods": [
                 "POST"
             ],
-            "variables": {}
+            "variables": {
+                "contact": {
+                    "type": "data",
+                    "mimetype": "application/json"
+                }
+            }
         },
         "SingleContact": {
             "path": "/contacts/v1/contact/vid/{contact_id}/profile",
