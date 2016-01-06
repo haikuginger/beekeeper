@@ -2,6 +2,8 @@
 Provides the Hive class to work with JSON hive files, both remotely
 retrieved and opened from a local file
 """
+from __future__ import absolute_import, division
+from __future__ import unicode_literals, print_function
 
 import json
 from .comms import download_as_json
@@ -15,7 +17,7 @@ class Hive(dict):
     """
 
     def __init__(self, **kwargs):
-        super().__init__(**kwargs)
+        dict.__init__(self, **kwargs)
 
     @classmethod
     def from_file(cls, fname, version=None):

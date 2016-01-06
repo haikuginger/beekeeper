@@ -2,6 +2,9 @@
 Provides methods and classes that handle working with variables
 """
 
+from __future__ import absolute_import, division
+from __future__ import unicode_literals, print_function
+
 from functools import partial
 
 def merge(var1, var2):
@@ -30,7 +33,7 @@ class Variable(dict):
         kwargs['types'] = kwargs.get('types', [])
         if not kwargs['types']:
             kwargs['types'].append(kwargs.get('type', 'url_param'))
-        super().__init__(**kwargs)
+        dict.__init__(self, **kwargs)
 
     def is_filled(self):
         """
@@ -75,7 +78,7 @@ class Variables(dict):
     """
 
     def __init__(self, **kwargs):
-        super().__init__()
+        dict.__init__(self)
         self.add(**kwargs)
         self.replacements = partial(self.vals, 'url_replacement')
 

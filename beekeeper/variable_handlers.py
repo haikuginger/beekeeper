@@ -7,6 +7,9 @@ or by returning an executed generator), or should yield
 single objects (in other words, be a generator).
 """
 
+from __future__ import absolute_import, division
+from __future__ import unicode_literals, print_function
+
 from functools import partial
 import base64
 from .data_handlers import encode
