@@ -11,7 +11,7 @@ from .comms import Response, Request
 class Endpoint:
 
     """
-    Contains the settings for an endpoint, as well as a backref to the API.
+    Contains the settings for an endpoint, as well as a backref to the API
     """
 
     def __init__(self, parent, path, **kwargs):
@@ -23,19 +23,19 @@ class Endpoint:
 
     def variables(self):
         """
-        Get API-level variables, and add in Endpoint-level variables
+        Get API-level variables, and add in Endpoint-level variables.
         """
         return self.parent.variables().add(**self.vars)
 
     def url(self):
         """
-        Combine the API-level root URL with the Endpoint's path
+        Combine the API-level root URL with the Endpoint's path.
         """
         return self.parent.root + self.path
 
     def new_action(self, method='GET', **kwargs):
         """
-        Create a new Action linked to this endpoint with the given args
+        Create a new Action linked to this endpoint with the given args.
         """
         if method not in self.methods:
             raise TypeError('{} not in valid method(s): {}.'.format(method, self.methods))
@@ -44,7 +44,7 @@ class Endpoint:
     def format(self):
         """
         Get the Endpoint-level mimetype, deferring to the API level settings
-        if the Endpoint object doesn't have a value
+        if the Endpoint object doesn't have a value.
         """
         if self.mimetype:
             return self.mimetype
@@ -55,7 +55,7 @@ class APIObject:
 
     """
     Holds Action objects in the appropriate namespace, and provides a __getitem__
-    dundermethod so that we can subscript by object ID when such exists.
+    dundermethod so that we can subscript by object ID when such exists
     """
 
     def __init__(self, parent, actions, **kwargs):
@@ -77,13 +77,13 @@ class APIObject:
 
     def defined_actions(self):
         """
-        Get a list of the available Actions on the APIObject
+        Get a list of the available Actions on the APIObject.
         """
         return [x for x, y in self.actions.items()]
 
     def add_action(self, name, parent, action):
         """
-        Add a single Action to the APIObject
+        Add a single Action to the APIObject.
         """
         self.actions[name] = parent.new_action(**action)
         setattr(self, name, self.actions[name].execute)
@@ -104,15 +104,16 @@ class Action:
     def variables(self):
         """
         Grab all the variables from the Endpoint and higher, and
-        add the ones that exist on the Action level
+        add the ones that exist on the Action level.
         """
         return self.endpoint.variables().add(**self.vars)
 
     def execute(self, *args, _verbose=False, **kwargs):
         """
         Fill all variables from *args and **kwargs, build the request,
-        send it, and parse the response appropriately as determined by
-        the MIME type defined in the hive.
+        and send it. If we set _verbose to true, then we'll get a Response
+        object back instead of loaded data, and we'll also print the
+        information that we're sending to the server.
         """
         variables = self.variables().fill(*args, **kwargs)
         return Request(self, variables, verbose=_verbose).send()
@@ -171,32 +172,32 @@ class API:
 
     def variables(self):
         """
-        Return a copy of the API-level variables
+        Return a copy of the API-level variables.
         """
         return copy.deepcopy(self.settings)
 
     def add_endpoint(self, name, **kwargs):
         """
-        Add an endpoint with the given name to the API
+        Add an endpoint with the given name to the API.
         """
         self.endpoints[name] = Endpoint(self, **kwargs)
 
     def add_object(self, name, obj):
         """
         Initialize an APIObject with the given name and make it available
-        using dot notation from the top-level namespace
+        using dot notation from the top-level namespace.
         """
         setattr(self, name, APIObject(self, **obj))
 
     def new_action(self, endpoint, **kwargs):
         """
         Initialize a new Action linked to the named Endpoint that's
-        a member of the API
+        a member of the API.
         """
         return self.endpoints[endpoint].new_action(**kwargs)
 
     def format(self):
         """
-        Provide the API-level MIME type
+        Provide the API-level MIME type.
         """
         return self.mimetype

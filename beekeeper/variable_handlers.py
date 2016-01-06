@@ -1,3 +1,12 @@
+"""
+This module provides methods that parse variables into
+one of the three base level variable types. We map the
+variable type names to methods that can handle them. Each
+method should either return an iterable (either natively
+or by returning an executed generator), or should yield
+single objects (in other words, be a generator).
+"""
+
 from .data_handlers import encode
 from functools import partial
 import base64

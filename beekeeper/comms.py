@@ -18,6 +18,11 @@ def request(*args, **kwargs):
 
 class Request:
 
+    """
+    Holds data and provides methods related to building and sending
+    an HTTP request with the data passed to it
+    """
+
     def __init__(self, action, variables, verbose=False):
         self.action = action
         self.variables = variables
@@ -29,11 +34,19 @@ class Request:
         self.render_variables()
 
     def render_variables(self):
+        """
+        Take the variables passed in during init and parse them
+        into the three base level variables we can actually
+        do stuff with - data, headers, and url.
+        """
         for var_type in self.variables.types():
             for var in render(var_type, **self.variables.vals(var_type)):
                 self.set(var)
 
     def print_out(self):
+        """
+        Print out the three base level variables of the request.
+        """
         print('URL: {}'.format(self.output['url']))
         print('Headers:')
         if self.output['headers']:
@@ -45,6 +58,9 @@ class Request:
         print('Data:\n{}'.format(str(self.output['data'])))
 
     def send(self):
+        """
+        Send the request defined by the data stored in the object.
+        """
         if self.verbose:
             self.print_out()
             return Response(self.action, request(**self.output))
@@ -52,6 +68,9 @@ class Request:
             return Response(self.action, request(**self.output)).read()
 
     def set(self, variable):
+        """
+        Set the received base-level variable in the object
+        """
         method_map = {
             'url_param': self.set_url_param,
             'header': self.set_url_param,
@@ -63,16 +82,32 @@ class Request:
             raise Exception('Cannot handle final variables of type {}'.format(variable['type']))
 
     def set_header(self, header):
+        """
+        Set a base-level header variable to have the given value
+        """
         self.output['headers'][header['name']] = header['value']
 
     def set_data(self, data):
+        """
+        Set the base-level data variable to contain the given
+        data, and also set the Content-Type header to the relevant
+        value.
+        """
         self.output['data'] = data['data']
-        self.output['headers']['Content-Type'] = data['mimetype']
+        self.output['headers']['Content-Type'] = data.get('mimetype', self.action.format(direction='takes'))
 
     def set_url_param(self, param):
+        """
+        Set the base-level URL parameter variable to have the given value
+        """
         self.output['url'] += '{}={}&'.format(param['name'], param['value'])
 
 class Response:
+
+    """
+    Stores data and provides methods related to the response that
+    we get back from the API provider's server
+    """
 
     def __init__(self, action, response):
         self.action = action
@@ -82,22 +117,43 @@ class Response:
         self.message = response.reason
 
     def mimetype(self):
+        """
+        Get the Content-Type header from the response. Strip
+        the ";charset=xxxxx" portion if necessary. If we can't
+        find it, use the predefined format.
+        """
         if ';' in self.headers['Content-Type']:
             return self.headers['Content-Type'].split(';')[0]
         return self.headers.get('Content-Type', self.format())
 
     def format(self):
+        """
+        Get the hard-defined format of the parent action object
+        """
         return self.action.format(direction='returns')
 
     def encoding(self):
+        """
+        Look for a "charset=" variable in the Content-Type header;
+        if it's not there, just return a default value of UTF-8
+        """
         if 'charset=' in self.headers['Content-Type']:
             return self.headers['Content-Type'].split('charset=')[1].split(';')[0]
         return 'utf-8'
 
     def cookies(self):
+        """
+        Get a list from the Set-Cookie header; if there's nothing
+        there, return an empty list.
+        """
         if self.headers.get('Set-Cookie', False):
             return self.headers.get('Set-Cookie').split('; ')
         return []
 
     def read(self):
+        """
+        Parse the body of the response using the Content-Type
+        header we pulled from the response, or the hive-defined
+        format, if such couldn't be pulled automatically. 
+        """
         return decode(self.data, self.mimetype())

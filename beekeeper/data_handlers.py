@@ -1,3 +1,12 @@
+"""
+This module provides methods to parse various data
+types into and out of binary form. Similar way of
+doing things to variable_handlers; we map MIME types
+to format-specific classes in a dictionary, and then
+have a generic "run" method that directs requests
+passed to it to the correct format-specific method.
+"""
+
 import json
 from urllib.parse import urlencode
 from functools import partial
