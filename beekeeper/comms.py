@@ -1,6 +1,11 @@
+"""
+Provides classes and methods related to communicating with the remote API
+"""
+
+import urllib.request
+import json
 from .variable_handlers import render
 from .data_handlers import decode
-import urllib.request
 
 def download_as_json(url):
     """
@@ -50,11 +55,10 @@ class Request:
         print('URL: {}'.format(self.output['url']))
         print('Headers:')
         if self.output['headers']:
-            for x, y in self.output['headers'].items():
-                print('{}: {}'.format(x, y))
+            for name, val in self.output['headers'].items():
+                print('{}: {}'.format(name, val))
         else:
             print('None')
-        
         print('Data:\n{}'.format(str(self.output['data'])))
 
     def send(self):
@@ -94,7 +98,7 @@ class Request:
         value.
         """
         self.output['data'] = data['data']
-        self.output['headers']['Content-Type'] = data.get('mimetype', self.action.format(direction='takes'))
+        self.output['headers']['Content-Type'] = data['mimetype']
 
     def set_url_param(self, param):
         """
@@ -154,6 +158,6 @@ class Response:
         """
         Parse the body of the response using the Content-Type
         header we pulled from the response, or the hive-defined
-        format, if such couldn't be pulled automatically. 
+        format, if such couldn't be pulled automatically.
         """
         return decode(self.data, self.mimetype())

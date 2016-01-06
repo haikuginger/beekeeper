@@ -7,9 +7,9 @@ or by returning an executed generator), or should yield
 single objects (in other words, be a generator).
 """
 
-from .data_handlers import encode
 from functools import partial
 import base64
+from .data_handlers import encode
 
 def identity(var_type, **values):
     for name, value in values.items():

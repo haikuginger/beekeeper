@@ -6,7 +6,7 @@ to directly interface between the developer and the remote API.
 import copy
 from .variables import Variables
 from .hive import Hive
-from .comms import Response, Request
+from .comms import Request
 
 class Endpoint:
 

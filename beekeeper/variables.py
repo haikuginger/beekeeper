@@ -1,3 +1,7 @@
+"""
+Provides methods and classes that handle working with variables
+"""
+
 from functools import partial
 
 def merge(var1, var2):
@@ -11,7 +15,8 @@ def merge(var1, var2):
     out['mimetype'] = var2.get('mimetype', var1.get('mimetype', None))
     out['types'] = list(set(var1['types'] + var2['types']))
     out['optional'] = var2.get('optional', False)
-    
+    return Variable(**out)
+
 
 class Variable(dict):
 
@@ -154,4 +159,4 @@ class Variables(dict):
         List the names of the variables that don't have
         a value yet.
         """
-        return [x for x,y in self.items() if not y.is_filled()]
+        return [name for name, val in self.items() if not val.is_filled()]

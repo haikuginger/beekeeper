@@ -1,5 +1,10 @@
-from .comms import download_as_json
+"""
+Provides the Hive class to work with JSON hive files, both remotely
+retrieved and opened from a local file
+"""
+
 import json
+from .comms import download_as_json
 
 class Hive(dict):
 
@@ -40,7 +45,7 @@ class Hive(dict):
         """
         Retrieve the URL for the designated version of the hive.
         """
-        for v in self['versioning']['previous_versions']:
-            if version == v:
-                return v['location']
+        for each_version in self['versioning']['previous_versions']:
+            if version == each_version:
+                return each_version['location']
         raise KeyError('Could not locate hive for version {}'.format(version))
