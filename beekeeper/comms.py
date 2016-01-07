@@ -122,7 +122,7 @@ class Response:
 
     def __init__(self, action, response):
         self.action = action
-        self.headers = dict(response.headers)
+        self.headers = response.headers
         self.data = response.read().decode(self.encoding())
         self.code = response.getcode()
 
