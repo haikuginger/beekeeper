@@ -84,7 +84,7 @@ class Request:
         """
         method_map = {
             'url_param': self.set_url_param,
-            'header': self.set_url_param,
+            'header': self.set_header,
             'data': self.set_data
         }
         if variable['type'] in method_map:

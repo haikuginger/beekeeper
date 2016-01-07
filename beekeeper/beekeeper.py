@@ -114,8 +114,8 @@ class Action:
     def execute(self, *args, **kwargs):
         """
         Fill all variables from *args and **kwargs, build the request,
-        and send it. If we set the _verbose kwarg to true, then we'll 
-        get a Response object back instead of loaded data, and we'll also 
+        and send it. If we set the _verbose kwarg to true, then we'll
+        get a Response object back instead of loaded data, and we'll also
         print the information that we're sending to the server.
         """
         _verbose = kwargs.pop('_verbose', False)
