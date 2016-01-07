@@ -64,7 +64,8 @@ class APIObject:
     def __init__(self, parent, actions, **kwargs):
         self.description = kwargs.get('description', None)
         self.id_variable = kwargs.get('id_variable', None)
-        self.key_action = kwargs.get('keyed_action', 'get')
+        self.keyed_get_action = kwargs.get('keyed_get_action', 'get')
+        self.keyed_set_action = kwargs.get('keyed_set_action', 'update')
         self.actions = {}
         for name, action in actions.items():
             self.add_action(name, parent, action)
@@ -74,8 +75,8 @@ class APIObject:
         Allows us to subscript, dictionary-style, on the object if we
         know what the object's unique key is.
         """
-        if self.key_action in self.actions and self.id_variable:
-            return getattr(self, self.key_action)(**{self.id_variable:key})
+        if self.keyed_get_action in self.actions and self.id_variable:
+            return getattr(self, self.keyed_get_action)(**{self.id_variable:key})
         raise TypeError('Object cannot be addressed by ID')
 
     def defined_actions(self):
