@@ -95,7 +95,7 @@ class Variables(dict):
         Variables object.
         """
         output = set()
-        for name, var in self.items():
+        for _, var in self.items():
             for var_type in var.types():
                 output.add(var_type)
         return list(output)
