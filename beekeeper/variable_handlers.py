@@ -30,16 +30,15 @@ def http_form(**values):
     yield render('data', **form)
 
 def basic_auth(**values):
-    username = values.get('username', '')
-    password = values.get('password', '')
-    authinfo = base64.b64encode("{}:{}".format(username, password).encode('utf-8'))
+    authelements = values.get('username', ''), values.get('password', '')
+    authinfo = base64.b64encode("{}:{}".format(*authelements).encode('utf-8'))
     authinfo = 'Basic {}'.format(authinfo.decode('utf-8'))
     return header(Authorization=authinfo)
 
 def cookies(**values):
     return header(Cookie='; '.join([value for _, value in values.items()]))
 
-def empty(**values):
+def empty(**_):
     return []
 
 header = partial(identity, 'header')
@@ -49,7 +48,7 @@ variable_types = {
     'http_form': http_form,
     'header': header,
     'data': render_data,
-    'url_replacement': empty,
+    'url_replacement': identity,
     'url_param': url_param,
     'http_basic_auth': basic_auth
     'cookie': cookies

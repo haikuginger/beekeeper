@@ -42,7 +42,7 @@ class Request:
         self.output = {}
         self.output['data'] = None
         self.output['headers'] = {}
-        self.output['url'] = self.action.endpoint.url().format(**variables.replacements()) + '?'
+        self.output['url'] = self.action.endpoint.url() + '?'
         self.render_variables()
 
     def render_variables(self):
@@ -85,6 +85,7 @@ class Request:
         method_map = {
             'url_param': self.set_url_param,
             'header': self.set_header,
+            'url_replacement': self.set_url_replacement
             'data': self.set_data
         }
         if variable['type'] in method_map:
@@ -112,6 +113,11 @@ class Request:
         Set the base-level URL parameter variable to have the given value
         """
         self.output['url'] += '{}={}&'.format(param['name'], param['value'])
+
+    def set_url_replacement(self, rep):
+        url = self.output['url']
+        url = rep['value'].join(url.split('{{{}}}'.format(rep['name']))
+        self.output['url'] = url
 
 class Response:
 
