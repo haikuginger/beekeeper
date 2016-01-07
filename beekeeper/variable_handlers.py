@@ -22,7 +22,7 @@ def render_data(**data):
     if len(data) > 1:
         raise Exception('render_data can only receive a single data object')
     else:
-        for name, val in data.items():
+        for _, val in data.items():
             yield encode(val['value', val['mimetype']])
 
 def http_form(**values):
@@ -35,6 +35,9 @@ def basic_auth(**values):
     authinfo = base64.b64encode("{}:{}".format(username, password).encode('utf-8'))
     authinfo = 'Basic {}'.format(authinfo.decode('utf-8'))
     return header(Authorization=authinfo)
+
+def cookies(**values):
+    return header(Cookie='; '.join([value for _, value in values.items()]))
 
 def empty(**values):
     return []
@@ -49,6 +52,7 @@ variable_types = {
     'url_replacement': empty,
     'url_param': url_param,
     'http_basic_auth': basic_auth
+    'cookie': cookies
 }
 
 def render(var_type, **values):
