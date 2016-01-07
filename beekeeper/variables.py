@@ -19,7 +19,7 @@ def merge(var1, var2):
     out['value'] = var2.get('value', var1.get('value', None))
     out['mimetype'] = var2.get('mimetype', var1.get('mimetype', None))
     out['types'] = list(set(var1['types'] + var2['types']))
-    out['optional'] = var2.get('optional', False)
+    out['optional'] = var2.get('optional', var1.get('optional', False))
     return Variable(**out)
 
 class Variable(dict):
