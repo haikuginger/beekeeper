@@ -8,7 +8,7 @@ The hive specification is designed to provide beekeeper (or other applications c
 While the classes available in beekeeper can be used manually to create Pythonic representations of REST endpoints, it is strongly preferred that the library be used as a whole with a constructed hive file. As APIs become larger in scale (in terms of the number of endpoints and represented objects), the time benefit of beekeeper becomes more pronounced, as adding additional objects and endpoints is a trivial process.
 
 ## Requirements
-beekeeper requires Python 3.4.3 or higher and its built-in modules.
+beekeeper requires Python 2.7.9/3.4.3 or higher and their built-in modules.
 
 ## Usage
 beekeeper does not handle application logic for your client program. Rather, it only constructs an API object which can be used to abstract your server's REST interface. Currently, construction is supported in one of two fashions; either from a Python dictionary representing the hive, or from a JSON hive file.
@@ -127,4 +127,4 @@ The optional `mimetype` object may contain any or none of three keys; `takes`, `
 
 ## Notes
 
-beekeeper does not currently do SSL certificate verification when used on Python versions earlier than 3.4.3. If ported to use urllib2 for python2 compatibility in future, SSL certificate verification will require 2.7.9 or later.
+beekeeper does not currently do SSL certificate verification when used on Python versions earlier than 2.7.9 or 3.4.3.

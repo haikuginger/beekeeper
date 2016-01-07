@@ -3,6 +3,9 @@ This module contains all the beekeeper classes that are used on the front end
 to directly interface between the developer and the remote API.
 """
 
+from __future__ import absolute_import, division
+from __future__ import unicode_literals, print_function
+
 import copy
 from .variables import Variables
 from .hive import Hive
@@ -61,7 +64,8 @@ class APIObject:
     def __init__(self, parent, actions, **kwargs):
         self.description = kwargs.get('description', None)
         self.id_variable = kwargs.get('id_variable', None)
-        self.key_action = kwargs.get('keyed_action', 'get')
+        self.keyed_get_action = kwargs.get('keyed_get_action', 'get')
+        self.keyed_set_action = kwargs.get('keyed_set_action', 'update')
         self.actions = {}
         for name, action in actions.items():
             self.add_action(name, parent, action)
@@ -71,15 +75,15 @@ class APIObject:
         Allows us to subscript, dictionary-style, on the object if we
         know what the object's unique key is.
         """
-        if self.key_action in self.actions and self.id_variable:
-            return getattr(self, self.key_action)(**{self.id_variable:key})
+        if self.keyed_get_action in self.actions and self.id_variable:
+            return getattr(self, self.keyed_get_action)(**{self.id_variable:key})
         raise TypeError('Object cannot be addressed by ID')
 
     def defined_actions(self):
         """
         Get a list of the available Actions on the APIObject.
         """
-        return [x for x, y in self.actions.items()]
+        return [name for name, _ in self.actions.items()]
 
     def add_action(self, name, parent, action):
         """
@@ -108,13 +112,14 @@ class Action:
         """
         return self.endpoint.variables().add(**self.vars)
 
-    def execute(self, *args, _verbose=False, **kwargs):
+    def execute(self, *args, **kwargs):
         """
         Fill all variables from *args and **kwargs, build the request,
-        and send it. If we set _verbose to true, then we'll get a Response
-        object back instead of loaded data, and we'll also print the
-        information that we're sending to the server.
+        and send it. If we set the _verbose kwarg to true, then we'll
+        get a Response object back instead of loaded data, and we'll also
+        print the information that we're sending to the server.
         """
+        _verbose = kwargs.pop('_verbose', False)
         variables = self.variables().fill(*args, **kwargs)
         return Request(self, variables, verbose=_verbose).send()
 
@@ -155,19 +160,21 @@ class API:
         return this_api
 
     @classmethod
-    def from_hive_file(cls, fname, *args, version=None, **kwargs):
+    def from_hive_file(cls, fname, *args, **kwargs):
         """
         Open a local JSON hive file and initialize from the hive contained
-        in that file, paying attention to the Version keyword argument.
+        in that file, paying attention to the version keyword argument.
         """
+        version = kwargs.pop('version', None)
         return cls.from_hive(Hive.from_file(fname, version), *args, **kwargs)
 
     @classmethod
-    def from_remote_hive(cls, url, *args, version=None, **kwargs):
+    def from_remote_hive(cls, url, *args, **kwargs):
         """
         Download a JSON hive file from a URL, and initialize from it,
-        paying attention to the Version keyword argument.
+        paying attention to the version keyword argument.
         """
+        version = kwargs.pop('version', None)
         return cls.from_hive(Hive.from_url(url, version), *args, **kwargs)
 
     def variables(self):

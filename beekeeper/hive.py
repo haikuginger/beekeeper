@@ -2,6 +2,8 @@
 Provides the Hive class to work with JSON hive files, both remotely
 retrieved and opened from a local file
 """
+from __future__ import absolute_import, division
+from __future__ import unicode_literals, print_function
 
 import json
 from .comms import download_as_json
@@ -15,7 +17,7 @@ class Hive(dict):
     """
 
     def __init__(self, **kwargs):
-        super().__init__(**kwargs)
+        dict.__init__(self, **kwargs)
 
     @classmethod
     def from_file(cls, fname, version=None):
@@ -36,7 +38,7 @@ class Hive(dict):
         Create a Hive object based on the information in the object
         and the version passed into the method.
         """
-        if not version or self['versioning']['version'] == version:
+        if not version or self.version() == version:
             return self
         else:
             return Hive.from_url(self.get_version_url(version))
@@ -45,7 +47,26 @@ class Hive(dict):
         """
         Retrieve the URL for the designated version of the hive.
         """
-        for each_version in self['versioning']['previous_versions']:
+        for each_version in self.other_versions():
             if version == each_version:
-                return each_version['location']
+                return each_version.get('location', MissingVersion(version))
+        MissingVersion(version)
+
+    def version(self):
+        """
+        Retrieve the current hive's version, if present.
+        """
+        return self.get('versioning', {}).get('version', None)
+
+    def other_versions(self):
+        """
+        Generate a list of other versions in the hive.
+        """
+        return self.get('versioning', {}).get('previous_versions', [])
+
+    @staticmethod
+    def MissingVersion(version):
+        """
+        Raise an exception stating we couldn't find the version URL in the hive.
+        """
         raise KeyError('Could not locate hive for version {}'.format(version))

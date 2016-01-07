@@ -7,8 +7,15 @@ have a generic "run" method that directs requests
 passed to it to the correct format-specific method.
 """
 
+from __future__ import absolute_import, division
+from __future__ import unicode_literals, print_function
+
+try:
+    from urllib import urlencode
+except ImportError:
+    from urllib.parse import urlencode
+
 import json
-from urllib.parse import urlencode
 from functools import partial
 
 class JSONParser:

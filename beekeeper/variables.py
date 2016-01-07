@@ -2,7 +2,12 @@
 Provides methods and classes that handle working with variables
 """
 
+from __future__ import absolute_import, division
+from __future__ import unicode_literals, print_function
+
 from functools import partial
+
+DEFAULT_VARIABLE_TYPE = 'url_param'
 
 def merge(var1, var2):
     """
@@ -17,7 +22,6 @@ def merge(var1, var2):
     out['optional'] = var2.get('optional', False)
     return Variable(**out)
 
-
 class Variable(dict):
 
     """
@@ -28,9 +32,9 @@ class Variable(dict):
 
     def __init__(self, **kwargs):
         kwargs['types'] = kwargs.get('types', [])
-        if not kwargs['types']:
-            kwargs['types'].append(kwargs.get('type', 'url_param'))
-        super().__init__(**kwargs)
+        if not kwargs['types'] and kwargs.get('type', False):
+            kwargs['types'].append(kwargs.get('type'))
+        dict.__init__(self, **kwargs)
 
     def is_filled(self):
         """
@@ -41,10 +45,15 @@ class Variable(dict):
 
     def has_type(self, var_type):
         """
-        Does the variable have the given type?
+        Does the variable have the given type? If not, are we looking
+        for variables of the default type, and are no types
+        defined for the variable in question?
         """
         if var_type in self.types():
             return True
+        elif var_type == DEFAULT_VARIABLE_TYPE:
+            if self.has_no_type():
+                return True
 
     def has_value(self):
         """
@@ -68,6 +77,9 @@ class Variable(dict):
         for each in self['types']:
             yield each
 
+    def has_no_type(self):
+        if not self.types()
+
 class Variables(dict):
 
     """
@@ -75,7 +87,7 @@ class Variables(dict):
     """
 
     def __init__(self, **kwargs):
-        super().__init__()
+        dict.__init__(self)
         self.add(**kwargs)
         self.replacements = partial(self.vals, 'url_replacement')
 
@@ -85,7 +97,7 @@ class Variables(dict):
         Variables object.
         """
         output = set()
-        for name, var in self.items():
+        for _, var in self.items():
             for var_type in var.types():
                 output.add(var_type)
         return list(output)

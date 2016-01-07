@@ -2,7 +2,14 @@
 Provides classes and methods related to communicating with the remote API
 """
 
-import urllib.request
+from __future__ import absolute_import, division
+from __future__ import unicode_literals, print_function
+
+try:
+    from urllib2 import Request as PythonRequest, urlopen
+except ImportError:
+    from urllib.request import Request as PythonRequest, urlopen
+
 import json
 from .variable_handlers import render
 from .data_handlers import decode
@@ -18,8 +25,8 @@ def request(*args, **kwargs):
     Make a request with the received arguments and return an
     HTTPResponse object
     """
-    req = urllib.request.Request(*args, **kwargs)
-    return urllib.request.urlopen(req)
+    req = PythonRequest(*args, **kwargs)
+    return urlopen(req)
 
 class Request:
 
@@ -77,7 +84,7 @@ class Request:
         """
         method_map = {
             'url_param': self.set_url_param,
-            'header': self.set_url_param,
+            'header': self.set_header,
             'data': self.set_data
         }
         if variable['type'] in method_map:
@@ -115,10 +122,9 @@ class Response:
 
     def __init__(self, action, response):
         self.action = action
-        self.headers = dict(response.headers)
+        self.headers = response.headers
         self.data = response.read().decode(self.encoding())
-        self.code = response.status
-        self.message = response.reason
+        self.code = response.getcode()
 
     def mimetype(self):
         """
@@ -126,7 +132,7 @@ class Response:
         the ";charset=xxxxx" portion if necessary. If we can't
         find it, use the predefined format.
         """
-        if ';' in self.headers['Content-Type']:
+        if ';' in self.headers.get('Content-Type', ''):
             return self.headers['Content-Type'].split(';')[0]
         return self.headers.get('Content-Type', self.format())
 
@@ -141,7 +147,7 @@ class Response:
         Look for a "charset=" variable in the Content-Type header;
         if it's not there, just return a default value of UTF-8
         """
-        if 'charset=' in self.headers['Content-Type']:
+        if 'charset=' in self.headers.get('Content-Type', ''):
             return self.headers['Content-Type'].split('charset=')[1].split(';')[0]
         return 'utf-8'
 

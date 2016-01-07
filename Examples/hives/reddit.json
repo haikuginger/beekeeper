@@ -1,0 +1,58 @@
+{
+    "name": "Reddit",
+    "root": "https://www.reddit.com",
+    "mimetype": "application/json",
+    "variables": {
+        "User-Agent": {
+            "type": "header",
+            "value": "Beekeeperbot/0.3a"
+        }
+    },
+    "endpoints": {
+        "user": {
+            "path": "/user/{username}/{where}.json",
+            "variables": {
+                "username": {
+                    "type": "url_replacement"
+                },
+                "where": {
+                    "type": "url_replacement"
+                }
+            }
+        }
+    },
+    "objects": {
+        "User": {
+            "description": "A Reddit user",
+            "id_variable": "username",
+            "actions": {
+                "overview": {
+                    "endpoint": "user",
+                    "variables": {
+                        "where": {
+                            "type": "url_replacement",
+                            "value": "overview"
+                        }
+                    }
+                },
+                "comments": {
+                    "endpoint": "user",
+                    "variables": {
+                        "where": {
+                            "type": "url_replacement",
+                            "value": "comments"
+                        }
+                    }
+                },
+                "submitted": {
+                    "endpoint": "user",
+                    "variables": {
+                        "where": {
+                            "value": "submitted"
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
