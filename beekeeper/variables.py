@@ -45,7 +45,9 @@ class Variable(dict):
 
     def has_type(self, var_type):
         """
-        Does the variable have the given type?
+        Does the variable have the given type? If not, are we looking
+        for variables of the default type, and are no types
+        defined for the variable in question?
         """
         if var_type in self.types():
             return True
