@@ -78,7 +78,8 @@ class Variable(dict):
             yield each
 
     def has_no_type(self):
-        if not self.types()
+        if not self.types():
+            return True
 
 class Variables(dict):
 
