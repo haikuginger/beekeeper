@@ -50,7 +50,7 @@ variable_types = {
     'data': render_data,
     'url_replacement': identity,
     'url_param': url_param,
-    'http_basic_auth': basic_auth
+    'http_basic_auth': basic_auth,
     'cookie': cookies
 }
 
