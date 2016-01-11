@@ -41,14 +41,18 @@ def cookies(**values):
 def empty(**_):
     return []
 
+def multipart(**values):
+    pass
+
 header = partial(identity, 'header')
 url_param = partial(identity, 'url_param')
+url_replacement = partial(identity, 'url_replacement')
 
 variable_types = {
     'http_form': http_form,
     'header': header,
     'data': render_data,
-    'url_replacement': identity,
+    'url_replacement': url_replacement,
     'url_param': url_param,
     'http_basic_auth': basic_auth,
     'cookie': cookies
