@@ -46,20 +46,8 @@ def empty(**_):
     return []
 
 def multipart(**values):
-    boundary = uuid4().hex
-    files = {name: data for name, data in values.items() if data['mimetype'] != 'form-data'}
-    form_fields = {name: field for name, field in values.items() if data['mimetype'] == 'form-data'}
-    output = b''
-    for x in form_entry(boundary, **form_fields):
-        output += x
-    for x in file_entry(boundary, **files):
-        output += x
-    output += b'--' + bytes(boundary, encoding='utf-8') + b'--'
-    yield output
-    yield render('header', **{'Content-Type': 'multipart/form-data; boundary={}'.format(boundary)})
-
+    
     def form_entry(outer_bound, **values):
-
         if not values:
             return []
         for name, value in values.items():
@@ -75,7 +63,8 @@ def multipart(**values):
             out = b'\n--' + bytes(bound, encoding='utf-8')
             out += b'\nContent-Disposition: form-data; name="files"; filename="'
             out += bytes(value.get('filename', uuid4().hex), encoding='utf-8') + b'"'
-            out += b'\nContent-Type: ' + bytes(value['mimetype'])
+            out += b'\nContent-Type: ' + bytes(value['mimetype'], encoding='utf-8')
+            out += b'\n\n'
             out += encode(value['value'], value['mimetype'])
             return out
 
@@ -85,15 +74,28 @@ def multipart(**values):
             for name, value in values.items():
                 yield single_file(outer_bound, value)
         else:
-            inner_bound = uuid4().bytes
-            out = b'\n--' + outer_bound
+            inner_bound = uuid4().hex
+            out = b'\n--' + bytes(outer_bound, encoding='utf-8')
             out += b'\nContent-Disposition: form-data; name="files"'
-            out += b'\nContent-Type: multipart/mixed; boundary=' + inner_bound
+            out += b'\nContent-Type: multipart/mixed; boundary=' + bytes(inner_bound, encoding='utf-8')
             out += b'\n'
             yield out
             for name, value in values.items():
                 yield single_file(inner_bound, value)
-            yield b'--' + bytes(inner_bound, encoding='utf-8') + b'--'
+            yield b'\n--' + bytes(inner_bound, encoding='utf-8') + b'--'
+
+    boundary = uuid4().hex
+    files = {name: data for name, data in values.items() if data['mimetype'] != 'form-data'}
+    form_fields = {name: field for name, field in values.items() if field.get('mimetype', 'form-data') == 'form-data'}
+    output = b''
+    for x in form_entry(boundary, **form_fields):
+        output += x
+    for x in file_entry(boundary, **files):
+        output += x
+    output += b'\n--' + bytes(boundary, encoding='utf-8') + b'--'
+    yield {'type': 'data', 'data': output}
+    for x in render('header', **{'Content-Type': {'value':'multipart/form-data; boundary={}'.format(boundary)}}):
+        yield x
 
 variable_types = {
     'http_form': http_form,
@@ -108,4 +110,6 @@ variable_types = {
 
 def render(var_type, **values):
     if var_type in variable_types:
-        return variable_types[var_type](**values)
+        for x in variable_types[var_type](**values):
+            print(x)
+            yield x

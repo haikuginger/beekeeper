@@ -66,7 +66,7 @@ class Request:
                 print('{}: {}'.format(name, val))
         else:
             print('None')
-        print('Data:\n{}'.format(str(self.output['data'])))
+        print('Data:\n{}'.format((self.output['data'].decode('utf-8'))))
 
     def send(self):
         """
