@@ -106,7 +106,6 @@ class Request:
         value.
         """
         self.output['data'] = data['data']
-        self.output['headers']['Content-Type'] = data['mimetype']
 
     def set_url_param(self, param):
         """

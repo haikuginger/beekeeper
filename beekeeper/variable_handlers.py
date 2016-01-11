@@ -10,6 +10,7 @@ single objects (in other words, be a generator).
 from __future__ import absolute_import, division
 from __future__ import unicode_literals, print_function
 
+from uuid import uuid4
 from functools import partial
 import base64
 from .data_handlers import encode
@@ -23,7 +24,8 @@ def render_data(**data):
         raise Exception('render_data can only receive a single data object')
     else:
         for _, val in data.items():
-            yield encode(val['value'], val['mimetype'])
+            yield render('header', **{'Content-Type': {'value': val['mimetype']}})
+            yield {'type': 'data', 'value': encode(val['value'], val['mimetype'])}
 
 def http_form(**values):
     form = {'x': {'value': values, 'mimetype': 'application/x-www-form-urlencoded'}}
@@ -44,7 +46,54 @@ def empty(**_):
     return []
 
 def multipart(**values):
-    pass
+    boundary = uuid4().hex
+    files = {name: data for name, data in values.items() if data['mimetype'] != 'form-data'}
+    form_fields = {name: field for name, field in values.items() if data['mimetype'] == 'form-data'}
+    output = b''
+    for x in form_entry(boundary, **form_fields):
+        output += x
+    for x in file_entry(boundary, **files):
+        output += x
+    output += b'--' + bytes(boundary, encoding='utf-8') + b'--'
+    yield output
+    yield render('header', **{'Content-Type': 'multipart/form-data; boundary={}'.format(boundary)})
+
+    def form_entry(outer_bound, **values):
+
+        if not values:
+            return []
+        for name, value in values.items():
+            out = b'\n--' + bytes(outer_bound, encoding='utf-8')
+            out += b'\nContent-Disposition: form-data; name="'+bytes(name, encoding='utf-8')+b'"'
+            out += b'\n'
+            out += b'\n' + bytes(value['value'], encoding='utf-8')
+            yield out
+
+    def file_entry(outer_bound, **values):
+
+        def single_file(bound, value):
+            out = b'\n--' + bytes(bound, encoding='utf-8')
+            out += b'\nContent-Disposition: form-data; name="files"; filename="'
+            out += bytes(value.get('filename', uuid4().hex), encoding='utf-8') + b'"'
+            out += b'\nContent-Type: ' + bytes(value['mimetype'])
+            out += encode(value['value'], value['mimetype'])
+            return out
+
+        if not values:
+            return []
+        if len(values) == 1:
+            for name, value in values.items():
+                yield single_file(outer_bound, value)
+        else:
+            inner_bound = uuid4().bytes
+            out = b'\n--' + outer_bound
+            out += b'\nContent-Disposition: form-data; name="files"'
+            out += b'\nContent-Type: multipart/mixed; boundary=' + inner_bound
+            out += b'\n'
+            yield out
+            for name, value in values.items():
+                yield single_file(inner_bound, value)
+            yield b'--' + bytes(inner_bound, encoding='utf-8') + b'--'
 
 variable_types = {
     'http_form': http_form,
@@ -53,7 +102,8 @@ variable_types = {
     'url_replacement': partial(identity, 'url_replacement'),
     'url_param': partial(identity, 'url_param'),
     'http_basic_auth': basic_auth,
-    'cookie': cookies
+    'cookie': cookies,
+    'multipart': multipart
 }
 
 def render(var_type, **values):
