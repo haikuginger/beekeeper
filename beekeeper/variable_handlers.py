@@ -16,27 +16,27 @@ from .data_handlers import encode
 
 def identity(var_type, **values):
     for name, value in values.items():
-        yield dict(type=var_type, name=name, value=value)
+        yield dict(type=var_type, name=name, value=value['value'])
 
 def render_data(**data):
     if len(data) > 1:
         raise Exception('render_data can only receive a single data object')
     else:
         for _, val in data.items():
-            yield encode(val['value', val['mimetype']])
+            yield encode(val['value'], val['mimetype'])
 
 def http_form(**values):
     form = {'x': {'value': values, 'mimetype': 'application/x-www-form-urlencoded'}}
     yield render('data', **form)
 
 def basic_auth(**values):
-    authelements = values.get('username', ''), values.get('password', '')
+    authelements = values.get('username', {}).get('value', ''), values.get('password', {}).get('value', '')
     authinfo = base64.b64encode("{}:{}".format(*authelements).encode('utf-8'))
     authinfo = 'Basic {}'.format(authinfo.decode('utf-8'))
-    return header(Authorization=authinfo)
+    return render('header', Authorization={"value": authinfo})
 
 def cookies(**values):
-    return header(Cookie='; '.join([value for _, value in values.items()]))
+    return render('header', Cookie={'value':'; '.join([value['value'] for _, value in values.items()])})
 
 def empty(**_):
     return []
@@ -44,16 +44,12 @@ def empty(**_):
 def multipart(**values):
     pass
 
-header = partial(identity, 'header')
-url_param = partial(identity, 'url_param')
-url_replacement = partial(identity, 'url_replacement')
-
 variable_types = {
     'http_form': http_form,
-    'header': header,
+    'header': partial(identity, 'header'),
     'data': render_data,
-    'url_replacement': url_replacement,
-    'url_param': url_param,
+    'url_replacement': partial(identity, 'url_replacement'),
+    'url_param': partial(identity, 'url_param'),
     'http_basic_auth': basic_auth,
     'cookie': cookies
 }

@@ -81,6 +81,9 @@ class Variable(dict):
         if not self.types():
             return True
 
+    def value(self):
+        return self.get('value', None)
+
 class Variables(dict):
 
     """
@@ -108,7 +111,7 @@ class Variables(dict):
         Create a dictionary with name/value pairs listing the
         variables of a particular type that have a value.
         """
-        return {x: y['value'] for x, y in self.items() if y.has_value_of_type(var_type)}
+        return {x: y for x, y in self.items() if y.has_value_of_type(var_type)}
 
     def add(self, **kwargs):
         """
