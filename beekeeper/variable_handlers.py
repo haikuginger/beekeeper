@@ -30,13 +30,15 @@ def http_form(**values):
     yield render('data', **form)
 
 def basic_auth(**values):
-    authelements = values.get('username', {}).get('value', ''), values.get('password', {}).get('value', '')
-    authinfo = base64.b64encode("{}:{}".format(*authelements).encode('utf-8'))
+    username = values.get('username', {}).get('value', '')
+    password = values.get('password', {}).get('value', '')
+    authinfo = base64.b64encode("{}:{}".format(username, password).encode('utf-8'))
     authinfo = 'Basic {}'.format(authinfo.decode('utf-8'))
     return render('header', Authorization={"value": authinfo})
 
 def cookies(**values):
-    return render('header', Cookie={'value':'; '.join([value['value'] for _, value in values.items()])})
+    cookie = {'value':'; '.join([value['value'] for _, value in values.items()])}
+    return render('header', Cookie=cookie)
 
 def empty(**_):
     return []
