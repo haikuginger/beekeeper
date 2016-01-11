@@ -129,7 +129,7 @@ class Response:
     def __init__(self, action, response):
         self.action = action
         self.headers = response.headers
-        self.data = response.read().decode(self.encoding())
+        self.data = response.read()
         self.code = response.getcode()
 
     def mimetype(self):
@@ -172,4 +172,4 @@ class Response:
         header we pulled from the response, or the hive-defined
         format, if such couldn't be pulled automatically.
         """
-        return decode(self.data, self.mimetype())
+        return decode(self.data, self.mimetype(), encoding=self.encoding())

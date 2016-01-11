@@ -21,33 +21,41 @@ from functools import partial
 class JSONParser:
 
     @staticmethod
-    def dump(python_object):
+    def dump(python_object, encoding):
         if python_object:
-            return bytes(json.dumps(python_object), encoding='utf-8')
-        return None
+            return bytes(json.dumps(python_object), encoding=encoding)
 
     @staticmethod
-    def load(response):
-        return json.loads(response)
+    def load(response, encoding):
+        return json.loads(response.decode(encoding))
 
 class HTTPFormEncoder:
 
     @staticmethod
-    def dump(python_object):
+    def dump(python_object, encoding):
         if python_object:
-            return bytes(urlencode(python_object), encoding='utf-8')
-        return None
+            return bytes(urlencode(python_object), encoding=encoding)
 
 class PlainText:
 
     @staticmethod
-    def dump(python_object):
+    def dump(python_object, encoding):
         if python_object:
-            return bytes(str(python_object), encoding='utf-8')
-        return None
+            return bytes(str(python_object), encoding=encoding)
 
     @staticmethod
-    def load(response):
+    def load(response, encoding):
+        return response.decode(encoding)
+
+class Binary:
+
+    @staticmethod
+    def dump(python_object, encoding):
+        if python_object:
+            return python_object
+
+    @staticmethod
+    def load(response, encoding):
         return response
 
 mimetypes = {
@@ -57,9 +65,9 @@ mimetypes = {
     'text/html': PlainText
 }
 
-def code(action, data, mimetype):
+def code(action, data, mimetype, encoding='utf-8'):
     if mimetype in mimetypes and action in mimetypes[mimetype].__dict__:
-        return getattr(mimetypes[mimetype], action)(data)
+        return getattr(mimetypes[mimetype], action)(data, encoding)
     else:
         raise Exception('Cannot parse MIME type {}'.format(mimetype))
 
