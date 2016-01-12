@@ -78,13 +78,21 @@ def multipart(**values):
             return []
         for name, value in values.items():
             yield single_file(outer_bound, name, value)
-
+    
+    frame = '\n--{}\nContent-Disposition: form-data; name="{}"'
     boundary = uuid4().hex
-    files = {name: data for name, data in values.items() if data.get('mimetype', False)}
-    form_fields = {name: field for name, field in values.items() if name not in files}
+    files = [name for name, data in values.items() if data.get('mimetype', False)]
     output = bytes()
-    for x in chain(form_entry(boundary, **form_fields), file_entry(boundary, **files)):
-        output += x
+    for name, value in values.items():
+        if name in files:
+            this_frame = frame + '; filename="{}"\nContent-Type: {}\n\n'
+            this_data = encode(value['value'], value['mimetype'])
+            args = (boundary, name, value.get('filename', uuid4().hex), value['mimetype'])
+        else:
+            this_frame = frame + '\n\n'
+            this_data = bytes(value['value'], encoding='ascii')
+            args = (boundary, name)
+        output += bytes(this_frame.format(*args), encoding='ascii') + this_data
     output += bytes('\n--{}--'.format(boundary), encoding='ascii')
     yield {'type': 'data', 'data': output}
     yield content_type_header('multipart/form-data; boundary={}'.format(boundary))
