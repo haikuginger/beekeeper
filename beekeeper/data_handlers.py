@@ -58,7 +58,7 @@ class Binary:
     def load(response, encoding):
         return response
 
-mimetypes = {
+MIMETYPES = {
     'application/json': JSONParser,
     'application/x-www-form-urlencoded': HTTPFormEncoder,
     'text/plain': PlainText,
@@ -68,8 +68,8 @@ mimetypes = {
 def code(action, data, mimetype, encoding='utf-8'):
     if action == 'dump' and isinstance(data, bytes):
         return getattr(Binary, action)(data, encoding)
-    if mimetype in mimetypes and getattr(mimetypes[mimetype], action, None):
-        return getattr(mimetypes[mimetype], action)(data, encoding)
+    if mimetype in MIMETYPES and getattr(MIMETYPES[mimetype], action, None):
+        return getattr(MIMETYPES[mimetype], action)(data, encoding)
     else:
         raise Exception('Cannot parse MIME type {}'.format(mimetype))
 
