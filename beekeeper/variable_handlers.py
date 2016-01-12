@@ -29,7 +29,7 @@ def render_data(**data):
     else:
         for _, val in data.items():
             yield content_type_header(val['mimetype'])
-            yield {'type': 'data', 'value': encode(val['value'], val['mimetype'])}
+            yield {'type': 'data', 'data': encode(val['value'], val['mimetype'])}
 
 def http_form(**values):
     form = {'x': {'value': values, 'mimetype': 'application/x-www-form-urlencoded'}}
@@ -53,32 +53,6 @@ def empty(**_):
     return []
 
 def multipart(**values):
-    
-    def form_entry(outer_bound, **values):
-
-        if not values:
-            return []
-        for name, value in values.items():
-            val = value['value']
-            frame = '\n--{}\nContent-Disposition: form-data; name="{}"\n\n{}'
-            out = bytes(frame.format(outer_bound, name, val), encoding='ascii')
-            yield out
-
-    def file_entry(outer_bound, **values):
-
-        def single_file(bound, name, value):
-            fname = value.get('filename', uuid4().hex)
-            mimetype = value['mimetype']
-            frame = '\n--{}\nContent-Disposition: form-data; name="{}"; filename="{}"\nContent-Type: {}\n\n'
-            out = bytes(frame.format(bound, name, fname, mimetype), encoding='ascii')
-            out += encode(value['value'], value['mimetype'])
-            return out
-
-        if not values:
-            return []
-        for name, value in values.items():
-            yield single_file(outer_bound, name, value)
-    
     frame = '\n--{}\nContent-Disposition: form-data; name="{}"'
     boundary = uuid4().hex
     files = [name for name, data in values.items() if data.get('mimetype', False)]
