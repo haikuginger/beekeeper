@@ -10,7 +10,6 @@ single objects (in other words, be a generator).
 from __future__ import absolute_import, division
 from __future__ import unicode_literals, print_function
 
-from itertools import chain
 from uuid import uuid4
 from functools import partial
 import base64
@@ -71,7 +70,7 @@ def multipart(**values):
     yield {'type': 'data', 'data': output}
     yield content_type_header('multipart/form-data; boundary={}'.format(boundary))
 
-variable_types = {
+VARIABLE_TYPES = {
     'http_form': http_form,
     'header': partial(identity, 'header'),
     'data': render_data,
@@ -83,5 +82,5 @@ variable_types = {
 }
 
 def render(var_type, **values):
-    if var_type in variable_types:
-        return variable_types[var_type](**values)
+    if var_type in VARIABLE_TYPES:
+        return VARIABLE_TYPES[var_type](**values)
