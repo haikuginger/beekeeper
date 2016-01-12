@@ -66,7 +66,9 @@ mimetypes = {
 }
 
 def code(action, data, mimetype, encoding='utf-8'):
-    if mimetype in mimetypes and action in mimetypes[mimetype].__dict__:
+    if action == 'dump' and isinstance(data, bytes):
+        return getattr(Binary, action)(data, encoding)
+    if mimetype in mimetypes and getattr(mimetypes[mimetype], action, None):
         return getattr(mimetypes[mimetype], action)(data, encoding)
     else:
         raise Exception('Cannot parse MIME type {}'.format(mimetype))
