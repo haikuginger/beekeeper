@@ -10,6 +10,7 @@ single objects (in other words, be a generator).
 from __future__ import absolute_import, division
 from __future__ import unicode_literals, print_function
 
+from itertools import chain
 from uuid import uuid4
 from functools import partial
 import base64
@@ -82,11 +83,9 @@ def multipart(**values):
     files = {name: data for name, data in values.items() if data.get('mimetype', False)}
     form_fields = {name: field for name, field in values.items() if name not in files}
     output = bytes()
-    for x in form_entry(boundary, **form_fields):
+    for x in chain(form_entry(boundary, **form_fields), file_entry(boundary, **files)):
         output += x
-    for x in file_entry(boundary, **files):
-        output += x
-    output += b'\n--' + bytes(boundary, encoding='ascii') + b'--'
+    output += bytes('\n--{}--'.format(boundary), encoding='ascii')
     yield {'type': 'data', 'data': output}
     yield content_type_header('multipart/form-data; boundary={}'.format(boundary))
 
