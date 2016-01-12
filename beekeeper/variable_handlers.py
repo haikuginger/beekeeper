@@ -15,6 +15,9 @@ from functools import partial
 import base64
 from .data_handlers import encode
 
+def content_type_header(mimetype):
+    return {'name': 'Content-Type', 'type': 'header', 'value': mimetype}
+
 def identity(var_type, **values):
     for name, value in values.items():
         yield dict(type=var_type, name=name, value=value['value'])
@@ -24,23 +27,26 @@ def render_data(**data):
         raise Exception('render_data can only receive a single data object')
     else:
         for _, val in data.items():
-            yield render('header', **{'Content-Type': {'value': val['mimetype']}})
+            yield content_type_header(val['mimetype'])
             yield {'type': 'data', 'value': encode(val['value'], val['mimetype'])}
 
 def http_form(**values):
     form = {'x': {'value': values, 'mimetype': 'application/x-www-form-urlencoded'}}
-    yield render('data', **form)
+    for each in render('data', **form):
+        yield each
 
 def basic_auth(**values):
     username = values.get('username', {}).get('value', '')
     password = values.get('password', {}).get('value', '')
     authinfo = base64.b64encode("{}:{}".format(username, password).encode('utf-8'))
     authinfo = 'Basic {}'.format(authinfo.decode('utf-8'))
-    return render('header', Authorization={"value": authinfo})
+    for each in render('header', Authorization={"value": authinfo}):
+        yield each
 
 def cookies(**values):
     cookie = {'value':'; '.join([value['value'] for _, value in values.items()])}
-    return render('header', Cookie=cookie)
+    for each in render('header', Cookie=cookie):
+        yield each
 
 def empty(**_):
     return []
@@ -48,54 +54,41 @@ def empty(**_):
 def multipart(**values):
     
     def form_entry(outer_bound, **values):
+
         if not values:
             return []
         for name, value in values.items():
-            out = b'\n--' + bytes(outer_bound, encoding='utf-8')
-            out += b'\nContent-Disposition: form-data; name="'+bytes(name, encoding='utf-8')+b'"'
-            out += b'\n'
-            out += b'\n' + bytes(value['value'], encoding='utf-8')
+            val = value['value']
+            frame = '\n--{}\nContent-Disposition: form-data; name="{}"\n\n{}'
+            out = bytes(frame.format(outer_bound, name, val), encoding='ascii')
             yield out
 
     def file_entry(outer_bound, **values):
 
-        def single_file(bound, value):
-            out = b'\n--' + bytes(bound, encoding='utf-8')
-            out += b'\nContent-Disposition: form-data; name="files"; filename="'
-            out += bytes(value.get('filename', uuid4().hex), encoding='utf-8') + b'"'
-            out += b'\nContent-Type: ' + bytes(value['mimetype'], encoding='utf-8')
-            out += b'\n\n'
+        def single_file(bound, name, value):
+            fname = value.get('filename', uuid4().hex)
+            mimetype = value['mimetype']
+            frame = '\n--{}\nContent-Disposition: form-data; name="{}"; filename="{}"\nContent-Type: {}\n\n'
+            out = bytes(frame.format(bound, name, fname, mimetype), encoding='ascii')
             out += encode(value['value'], value['mimetype'])
             return out
 
         if not values:
             return []
-        if len(values) == 1:
-            for name, value in values.items():
-                yield single_file(outer_bound, value)
-        else:
-            inner_bound = uuid4().hex
-            out = b'\n--' + bytes(outer_bound, encoding='utf-8')
-            out += b'\nContent-Disposition: form-data; name="files"'
-            out += b'\nContent-Type: multipart/mixed; boundary=' + bytes(inner_bound, encoding='utf-8')
-            out += b'\n'
-            yield out
-            for name, value in values.items():
-                yield single_file(inner_bound, value)
-            yield b'\n--' + bytes(inner_bound, encoding='utf-8') + b'--'
+        for name, value in values.items():
+            yield single_file(outer_bound, name, value)
 
     boundary = uuid4().hex
-    files = {name: data for name, data in values.items() if data['mimetype'] != 'form-data'}
-    form_fields = {name: field for name, field in values.items() if field.get('mimetype', 'form-data') == 'form-data'}
-    output = b''
+    files = {name: data for name, data in values.items() if data.get('mimetype', False)}
+    form_fields = {name: field for name, field in values.items() if name not in files}
+    output = bytes()
     for x in form_entry(boundary, **form_fields):
         output += x
     for x in file_entry(boundary, **files):
         output += x
-    output += b'\n--' + bytes(boundary, encoding='utf-8') + b'--'
+    output += b'\n--' + bytes(boundary, encoding='ascii') + b'--'
     yield {'type': 'data', 'data': output}
-    for x in render('header', **{'Content-Type': {'value':'multipart/form-data; boundary={}'.format(boundary)}}):
-        yield x
+    yield content_type_header('multipart/form-data; boundary={}'.format(boundary))
 
 variable_types = {
     'http_form': http_form,
@@ -110,6 +103,4 @@ variable_types = {
 
 def render(var_type, **values):
     if var_type in variable_types:
-        for x in variable_types[var_type](**values):
-            print(x)
-            yield x
+        return variable_types[var_type](**values)
