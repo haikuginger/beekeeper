@@ -6,7 +6,8 @@ from __future__ import absolute_import, division
 from __future__ import unicode_literals, print_function
 
 import json
-from .comms import download_as_json
+
+from beekeeper.comms import download_as_json
 
 class Hive(dict):
 

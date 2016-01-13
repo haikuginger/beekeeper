@@ -12,8 +12,9 @@ except ImportError:
     from urllib.error import HTTPError
 
 import json
-from .variable_handlers import render
-from .data_handlers import decode
+
+from beekeeper.variable_handlers import render
+from beekeeper.data_handlers import decode
 
 def download_as_json(url):
     """

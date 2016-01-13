@@ -1,2 +1,2 @@
-from .beekeeper import API
-from .hive import Hive
+from beekeeper.beekeeper import API
+from beekeeper.hive import Hive

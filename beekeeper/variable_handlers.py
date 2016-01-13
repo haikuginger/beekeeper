@@ -13,7 +13,8 @@ from __future__ import unicode_literals, print_function
 from uuid import uuid4
 from functools import partial
 import base64
-from .data_handlers import encode
+
+from beekeeper.data_handlers import encode
 
 def content_type_header(mimetype):
     return {'name': 'Content-Type', 'type': 'header', 'value': mimetype}

@@ -7,9 +7,10 @@ from __future__ import absolute_import, division
 from __future__ import unicode_literals, print_function
 
 import copy
-from .variables import Variables
-from .hive import Hive
-from .comms import Request
+
+from beekeeper.variables import Variables
+from beekeeper.hive import Hive
+from beekeeper.comms import Request
 
 class Endpoint:
 
