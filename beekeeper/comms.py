@@ -6,9 +6,10 @@ from __future__ import absolute_import, division
 from __future__ import unicode_literals, print_function
 
 try:
-    from urllib2 import Request as PythonRequest, urlopen
+    from urllib2 import Request as PythonRequest, urlopen, HTTPError
 except ImportError:
     from urllib.request import Request as PythonRequest, urlopen
+    from urllib.error import HTTPError
 
 import json
 from .variable_handlers import render
@@ -40,7 +41,7 @@ class Request:
         self.variables = variables
         self.verbose = verbose
         self.output = {}
-        self.output['data'] = None
+        self.output['data'] = bytes()
         self.output['headers'] = {}
         self.output['url'] = self.action.endpoint.url() + '?'
         self.render_variables()
@@ -48,8 +49,7 @@ class Request:
     def render_variables(self):
         """
         Take the variables passed in during init and parse them
-        into the three base level variables we can actually
-        do stuff with - data, headers, and url.
+        into the base level variables we can actually do stuff with.
         """
         for var_type in self.variables.types():
             for var in render(var_type, **self.variables.vals(var_type)):
@@ -115,7 +115,7 @@ class Request:
 
     def set_url_replacement(self, rep):
         url = self.output['url']
-        url = rep['value'].join(url.split('{{{}}}'.format(rep['name'])))
+        url = str(rep['value']).join(url.split('{{{}}}'.format(rep['name'])))
         self.output['url'] = url
 
 class Response:
