@@ -42,7 +42,7 @@ class Request:
         self.variables = variables
         self.verbose = verbose
         self.output = {}
-        self.output['data'] = bytes()
+        self.output['data'] = None
         self.output['headers'] = {}
         self.output['url'] = self.action.endpoint.url() + '?'
         self.render_variables()
@@ -55,6 +55,7 @@ class Request:
         for var_type in self.variables.types():
             for var in render(var_type, **self.variables.vals(var_type)):
                 self.set(var)
+        self.output['url'] = self.output['url'][:len(self.output['url'])-1]
 
     def print_out(self):
         """
@@ -67,7 +68,9 @@ class Request:
                 print('{}: {}'.format(name, val))
         else:
             print('None')
-        print('Data:\n{}'.format((self.output['data'].decode('utf-8'))))
+        print('Data:')
+        if self.output['data']:
+            print(self.output['data'].decode('utf-8'))
 
     def send(self):
         """

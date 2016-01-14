@@ -76,6 +76,8 @@ class Variable(dict):
         """
         for each in self['types']:
             yield each
+        if not self['types']:
+            yield DEFAULT_VARIABLE_TYPE
 
     def has_no_type(self):
         if not self.types():
