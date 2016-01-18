@@ -33,21 +33,26 @@ def render_data(**data):
 
 def http_form(**values):
     form = {'x': {'value': values, 'mimetype': 'application/x-www-form-urlencoded'}}
-    for each in render('data', **form):
-        yield each
+    return render('data', **form)
 
 def basic_auth(**values):
     username = values.get('username', {}).get('value', '')
     password = values.get('password', {}).get('value', '')
     authinfo = b64encode("{}:{}".format(username, password).encode('utf-8'))
     authinfo = 'Basic {}'.format(authinfo.decode('utf-8'))
-    for each in render('header', Authorization={"value": authinfo}):
-        yield each
+    return render('header', Authorization={"value": authinfo})
+
+def bearer(**values):
+    if len(values) > 1:
+        raise Exception('Only one bearer token allowed')
+    else:
+        for _, token in values.items():
+            text = 'Bearer {}'.format(token['value'])
+            return render('header', Authorization={'value': text})
 
 def cookies(**values):
     cookie = {'value':'; '.join([value['value'] for _, value in values.items()])}
-    for each in render('header', Cookie=cookie):
-        yield each
+    return render('header', Cookie=cookie)
 
 def multipart(**values):
     frame = '\n--{}\nContent-Disposition: form-data; name="{}"'
@@ -76,7 +81,8 @@ VARIABLE_TYPES = {
     'url_param': partial(identity, 'url_param'),
     'http_basic_auth': basic_auth,
     'cookie': cookies,
-    'multipart': multipart
+    'multipart': multipart,
+    'bearer_token': bearer
 }
 
 def render(var_type, **values):
