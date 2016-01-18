@@ -7,12 +7,13 @@ from __future__ import absolute_import, division
 from __future__ import unicode_literals, print_function
 
 import copy
+from functools import partial
 
 from beekeeper.variables import Variables
 from beekeeper.hive import Hive
 from beekeeper.comms import Request
 
-class Endpoint:
+class Endpoint(object):
 
     """
     Contains the settings for an endpoint, as well as a backref to the API
@@ -55,7 +56,7 @@ class Endpoint:
         else:
             return self.parent.format()
 
-class APIObject:
+class APIObject(object):
 
     """
     Holds Action objects in the appropriate namespace, and provides a __getitem__
@@ -65,8 +66,6 @@ class APIObject:
     def __init__(self, parent, actions, **kwargs):
         self.description = kwargs.get('description', None)
         self.id_variable = kwargs.get('id_variable', None)
-        self.keyed_get_action = kwargs.get('keyed_get_action', 'get')
-        self.keyed_set_action = kwargs.get('keyed_set_action', 'update')
         self.actions = {}
         for name, action in actions.items():
             self.add_action(name, parent, action)
@@ -76,8 +75,8 @@ class APIObject:
         Allows us to subscript, dictionary-style, on the object if we
         know what the object's unique key is.
         """
-        if self.keyed_get_action in self.actions and self.id_variable:
-            return getattr(self, self.keyed_get_action)(**{self.id_variable:key})
+        if self.id_variable:
+            return APIObjectInstance(self, key)
         raise TypeError('Object cannot be addressed by ID')
 
     def defined_actions(self):
@@ -93,7 +92,34 @@ class APIObject:
         self.actions[name] = parent.new_action(**action)
         setattr(self, name, self.actions[name].execute)
 
-class Action:
+class APIObjectInstance(object):
+    """
+    Ephemeral class that gets created/destroyed when the developer subscripts
+    an APIObject; basically, the point is to execute an action with the subscripted
+    key passed to it, as below; the two statements are equivalent:
+
+    ExampleAPI.Object[123].update(varname=value)
+    ExampleAPI.Object.update(object_id=123, varname=value)
+    """
+
+    def __init__(self, api_object, id_key):
+        self.api_object = api_object
+        self.id_key = id_key
+        self.actions = api_object.defined_actions
+
+    def __getattr__(self, name):
+        """
+        If the action is one available on the parent APIObject, generate a
+        partial with the ID variable set to have the value passed during
+        initialization.
+        """
+        if name in self.api_object.defined_actions():
+            method = getattr(self.api_object, name)
+            return partial(method, **{self.api_object.id_variable: self.id_key})
+        else:
+            raise AttributeError
+
+class Action(object):
 
     """
     Holds action-level variables and provides the .execute() method
@@ -134,7 +160,7 @@ class Action:
         else:
             return self.endpoint.format()
 
-class API:
+class API(object):
 
     """
     Holds global-level settings and provides initialization methods
