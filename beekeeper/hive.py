@@ -39,7 +39,7 @@ class Hive(dict):
         Create a Hive object based on the information in the object
         and the version passed into the method.
         """
-        if not version or self.version() == version:
+        if version is None or self.version() == version:
             return self
         else:
             return Hive.from_url(self.get_version_url(version))

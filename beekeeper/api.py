@@ -36,7 +36,7 @@ class Endpoint(object):
         """
         Combine the API-level root URL with the Endpoint's path.
         """
-        return self.parent.root + self.path
+        return self.parent._root + self.path
 
     def new_action(self, method='GET', **kwargs):
         """
@@ -98,8 +98,8 @@ class APIObjectInstance(object):
     an APIObject; basically, the point is to execute an action with the subscripted
     key passed to it, as below; the two statements are equivalent:
 
-    ExampleAPI.Object[123].update(varname=value)
-    ExampleAPI.Object.update(object_id=123, varname=value)
+    ExampleAPI.Objects[123].update(varname=value)
+    ExampleAPI.Objects.update(object_id=123, varname=value)
     """
 
     def __init__(self, api_object, id_key):
@@ -113,9 +113,9 @@ class APIObjectInstance(object):
         partial with the ID variable set to have the value passed during
         initialization.
         """
-        if name in self.api_object.defined_actions():
-            method = getattr(self.api_object, name)
-            return partial(method, **{self.api_object.id_variable: self.id_key})
+        if name in self.actions():
+            action = getattr(self.api_object, name)
+            return partial(action, **{self.api_object.id_variable: self.id_key})
         else:
             raise AttributeError
 
@@ -166,25 +166,16 @@ class API(object):
     Holds global-level settings and provides initialization methods
     """
 
-    def __init__(self, root, variables, mimetype, *args, **kwargs):
-        self.settings = Variables(**variables).fill(*args, **kwargs)
-        self.mimetype = mimetype
-        self.root = root
-        self.endpoints = {}
-
-    @classmethod
-    def from_hive(cls, hive, *args, **kwargs):
-        """
-        Initialize the API itself, then in order, add the hive-defined
-        Endpoints, and the APIObjects and Actions that reference those
-        Endpoints.
-        """
-        this_api = cls(hive['root'], hive['variables'], hive['mimetype'], *args, **kwargs)
+    def __init__(self, hive, *args, **kwargs):
+        self._root = hive.get('root')
+        self._mimetype = hive.get('mimetype', 'application/json')
+        _vars = Variables(**hive.get('variables', {}))
+        self._vars = _vars.fill(*args, **kwargs)
+        self._endpoints = {}
         for name, endpoint in hive['endpoints'].items():
-            this_api.add_endpoint(name, **endpoint)
+            self.add_endpoint(name, **endpoint)
         for name, obj in hive['objects'].items():
-            this_api.add_object(name, obj)
-        return this_api
+            self.add_object(name, obj)
 
     @classmethod
     def from_hive_file(cls, fname, *args, **kwargs):
@@ -193,7 +184,7 @@ class API(object):
         in that file, paying attention to the version keyword argument.
         """
         version = kwargs.pop('version', None)
-        return cls.from_hive(Hive.from_file(fname, version), *args, **kwargs)
+        return cls(Hive.from_file(fname, version), *args, **kwargs)
 
     @classmethod
     def from_remote_hive(cls, url, *args, **kwargs):
@@ -202,19 +193,19 @@ class API(object):
         paying attention to the version keyword argument.
         """
         version = kwargs.pop('version', None)
-        return cls.from_hive(Hive.from_url(url, version), *args, **kwargs)
+        return cls(Hive.from_url(url, version), *args, **kwargs)
 
     def variables(self):
         """
         Return a copy of the API-level variables.
         """
-        return copy.deepcopy(self.settings)
+        return copy.deepcopy(self._vars)
 
     def add_endpoint(self, name, **kwargs):
         """
         Add an endpoint with the given name to the API.
         """
-        self.endpoints[name] = Endpoint(self, **kwargs)
+        self._endpoints[name] = Endpoint(self, **kwargs)
 
     def add_object(self, name, obj):
         """
@@ -228,10 +219,10 @@ class API(object):
         Initialize a new Action linked to the named Endpoint that's
         a member of the API.
         """
-        return self.endpoints[endpoint].new_action(**kwargs)
+        return self._endpoints[endpoint].new_action(**kwargs)
 
     def format(self):
         """
         Provide the API-level MIME type.
         """
-        return self.mimetype
+        return self._mimetype
