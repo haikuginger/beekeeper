@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/haikuginger/beekeeper.svg?branch=master)](https://travis-ci.org/haikuginger/beekeeper)
+
 # beekeeper
 
 ## Description

@@ -12,7 +12,7 @@ from __future__ import unicode_literals, print_function
 
 from uuid import uuid4
 from functools import partial
-import base64
+from base64 import b64encode
 
 from beekeeper.data_handlers import encode
 
@@ -39,7 +39,7 @@ def http_form(**values):
 def basic_auth(**values):
     username = values.get('username', {}).get('value', '')
     password = values.get('password', {}).get('value', '')
-    authinfo = base64.b64encode("{}:{}".format(username, password).encode('utf-8'))
+    authinfo = b64encode("{}:{}".format(username, password).encode('utf-8'))
     authinfo = 'Basic {}'.format(authinfo.decode('utf-8'))
     for each in render('header', Authorization={"value": authinfo}):
         yield each

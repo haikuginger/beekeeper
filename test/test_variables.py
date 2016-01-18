@@ -148,6 +148,3 @@ class VariablesTest(unittest.TestCase):
     def test_missing_vars(self):
         self.variables.add(a=variable_3)
         self.assertEqual(self.variables.missing_vars(), ['a'])
-
-if __name__ == '__main__':
-    unittest.main()
