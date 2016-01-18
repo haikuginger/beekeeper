@@ -18,7 +18,7 @@ def merge(var1, var2):
     out = {}
     out['value'] = var2.get('value', var1.get('value', None))
     out['mimetype'] = var2.get('mimetype', var1.get('mimetype', None))
-    out['types'] = list(set(var1['types'] + var2['types']))
+    out['types'] = var2.get('types') + [x for x in var1.get('types') if x not in var2.get('types')]
     out['optional'] = var2.get('optional', var1.get('optional', False))
     return Variable(**out)
 
@@ -33,7 +33,7 @@ class Variable(dict):
     def __init__(self, **kwargs):
         kwargs['types'] = kwargs.get('types', [])
         if not kwargs['types'] and kwargs.get('type', False):
-            kwargs['types'].append(kwargs.get('type'))
+            kwargs['types'].append(kwargs.pop('type'))
         dict.__init__(self, **kwargs)
 
     def is_filled(self):
@@ -42,6 +42,7 @@ class Variable(dict):
         """
         if self.has_value() or self.get('optional', False):
             return True
+        return False
 
     def has_type(self, var_type):
         """
@@ -51,16 +52,15 @@ class Variable(dict):
         """
         if var_type in self.types():
             return True
-        elif var_type == DEFAULT_VARIABLE_TYPE:
-            if self.has_no_type():
-                return True
+        return False
 
     def has_value(self):
         """
         Does the variable have a value?
         """
-        if self.get('value', None) is not None:
+        if self.value() is not None:
             return True
+        return False
 
     def has_value_of_type(self, var_type):
         """
@@ -69,6 +69,7 @@ class Variable(dict):
         """
         if self.has_value() and self.has_type(var_type):
             return True
+        return False
 
     def types(self):
         """
@@ -76,12 +77,13 @@ class Variable(dict):
         """
         for each in self['types']:
             yield each
-        if not self['types']:
+        if self.has_no_type():
             yield DEFAULT_VARIABLE_TYPE
 
     def has_no_type(self):
-        if not self.types():
+        if not self['types']:
             return True
+        return False
 
     def value(self):
         return self.get('value', None)
@@ -122,7 +124,7 @@ class Variables(dict):
         """
         for name, var in kwargs.items():
             if name in self:
-                self[name] = merge(self[name], var)
+                self[name] = merge(self[name], Variable(**var))
             else:
                 self[name] = Variable(**var)
         return self
