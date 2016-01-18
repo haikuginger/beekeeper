@@ -50,8 +50,8 @@ class Hive(dict):
         """
         for each_version in self.other_versions():
             if version == each_version:
-                return each_version.get('location', MissingVersion(version))
-        MissingVersion(version)
+                return each_version.get('location', Hive.MissingVersion(version))
+        Hive.MissingVersion(version)
 
     def version(self):
         """

@@ -18,7 +18,7 @@ except ImportError:
 import json
 from functools import partial
 
-class JSONParser:
+class JSONParser(object):
 
     @staticmethod
     def dump(python_object, encoding):
@@ -29,14 +29,14 @@ class JSONParser:
     def load(response, encoding):
         return json.loads(response.decode(encoding))
 
-class HTTPFormEncoder:
+class HTTPFormEncoder(object):
 
     @staticmethod
     def dump(python_object, encoding):
         if python_object:
             return bytes(urlencode(python_object), encoding=encoding)
 
-class PlainText:
+class PlainText(object):
 
     @staticmethod
     def dump(python_object, encoding):
@@ -47,7 +47,7 @@ class PlainText:
     def load(response, encoding):
         return response.decode(encoding)
 
-class Binary:
+class Binary(object):
 
     @staticmethod
     def dump(python_object, encoding):

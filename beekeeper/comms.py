@@ -30,7 +30,7 @@ def request(*args, **kwargs):
     req = PythonRequest(*args, **kwargs)
     return urlopen(req)
 
-class Request:
+class Request(object):
 
     """
     Holds data and provides methods related to building and sending
@@ -122,7 +122,7 @@ class Request:
         url = str(rep['value']).join(url.split('{{{}}}'.format(rep['name'])))
         self.output['url'] = url
 
-class Response:
+class Response(object):
 
     """
     Stores data and provides methods related to the response that
