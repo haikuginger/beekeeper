@@ -23,7 +23,7 @@ class JSONParser(object):
     @staticmethod
     def dump(python_object, encoding):
         if python_object:
-            return bytes(json.dumps(python_object), encoding=encoding)
+            return json.dumps(python_object).encode(encoding)
 
     @staticmethod
     def load(response, encoding):
@@ -34,14 +34,14 @@ class HTTPFormEncoder(object):
     @staticmethod
     def dump(python_object, encoding):
         if python_object:
-            return bytes(urlencode(python_object), encoding=encoding)
+            return urlencode(python_object).encode(encoding)
 
 class PlainText(object):
 
     @staticmethod
     def dump(python_object, encoding):
         if python_object:
-            return bytes(str(python_object), encoding=encoding)
+            return str(python_object).encode(encoding)
 
     @staticmethod
     def load(response, encoding):
@@ -67,6 +67,8 @@ MIMETYPES = {
 
 def code(action, data, mimetype, encoding='utf-8'):
     if action == 'dump' and isinstance(data, bytes):
+        return getattr(Binary, action)(data, encoding)
+    if action == 'load' and mimetype not in MIMETYPES:
         return getattr(Binary, action)(data, encoding)
     if mimetype in MIMETYPES and getattr(MIMETYPES[mimetype], action, None):
         return getattr(MIMETYPES[mimetype], action)(data, encoding)

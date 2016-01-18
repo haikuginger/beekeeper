@@ -49,9 +49,6 @@ def cookies(**values):
     for each in render('header', Cookie=cookie):
         yield each
 
-def empty(**_):
-    return []
-
 def multipart(**values):
     frame = '\n--{}\nContent-Disposition: form-data; name="{}"'
     boundary = uuid4().hex
