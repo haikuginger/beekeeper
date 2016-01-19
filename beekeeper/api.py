@@ -83,7 +83,7 @@ class APIObject(object):
         """
         Get a list of the available Actions on the APIObject.
         """
-        return [name for name, _ in self.actions.items()]
+        return [name for name in self.actions]
 
     def add_action(self, name, parent, action):
         """
