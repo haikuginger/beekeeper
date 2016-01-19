@@ -106,4 +106,4 @@ class HiveTest(unittest.TestCase):
     def test_find_version_url_no_info(self):
         hive = beekeeper.hive.Hive(**hive_vfree)
         with self.assertRaises(KeyError):
-            hive.get_version_url(5
+            hive.get_version_url(5)
