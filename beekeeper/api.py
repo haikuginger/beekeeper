@@ -169,8 +169,7 @@ class API(object):
     def __init__(self, hive, *args, **kwargs):
         self._root = hive.get('root')
         self._mimetype = hive.get('mimetype', 'application/json')
-        _vars = Variables(**hive.get('variables', {}))
-        self._vars = _vars.fill(*args, **kwargs)
+        self._vars = Variables(**hive.get('variables', {})).fill(*args, **kwargs)
         self._endpoints = {}
         for name, endpoint in hive['endpoints'].items():
             self.add_endpoint(name, **endpoint)
