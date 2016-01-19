@@ -1,0 +1,92 @@
+from __future__ import unicode_literals
+
+import unittest
+
+import beekeeper.hive
+
+hive_v5 = {
+    "name": "test_hive",
+    "versioning": {
+        "version": 5,
+        "previous_versions": [
+            {
+                "version": 4,
+                "location": "url_for_version_4"
+            }
+        ]
+    }
+}
+
+hive_v4 = {
+    "name": "test_hive",
+    "versioning": {
+        "version": 4,
+        "previousVersions": [
+            {
+                "version": 5,
+                "location": "url_for_version_5"
+            }
+        ]
+    }
+}
+
+def fake_download_as_json(url):
+    hives = {
+        "url_for_version_4": hive_v4,
+        "url_for_version_5": hive_v5
+    }
+    return hives[url]
+
+beekeeper.hive.download_as_json = fake_download_as_json
+
+class HiveTest(unittest.TestCase):
+
+    def setUp(self):
+        self.hive = beekeeper.hive.Hive(**hive_v5)
+
+    def test_get_version_url(self):
+        self.assertEqual(self.hive.get_version_url(4), 'url_for_version_4')
+
+    def test_get_nonexistent_version_url(self):
+        with self.assertRaises(KeyError):
+            self.hive.get_version_url(6)
+
+    def test_version(self):
+        self.assertEqual(self.hive.version(), 5)
+
+    def test_other_versions(self):
+        self.assertEqual(
+            self.hive.other_versions(),
+            [
+                {
+                    "version": 4,
+                    "location": "url_for_version_4"
+                }
+            ]
+        )
+
+    def testMissingVersion(self):
+        with self.assertRaises(KeyError):
+            beekeeper.Hive.MissingVersion(10)
+
+    def test_from_version(self):
+        self.assertEqual(
+            self.hive.from_version(4),
+            beekeeper.hive.Hive(**hive_v4)
+        )
+
+    def test_from_bad_version(self):
+        with self.assertRaises(KeyError):
+            self.hive.from_version(10)
+
+    def test_from_empty_version(self):
+        self.assertEqual(
+            self.hive.from_version(None),
+            self.hive
+        )
+
+    def test_from_same_version(self):
+        self.assertEqual(
+            self.hive.from_version(5),
+            self.hive
+        )

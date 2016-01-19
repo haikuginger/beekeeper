@@ -49,8 +49,8 @@ class Hive(dict):
         Retrieve the URL for the designated version of the hive.
         """
         for each_version in self.other_versions():
-            if version == each_version:
-                return each_version.get('location', Hive.MissingVersion(version))
+            if version == each_version['version'] and 'location' in each_version:
+                return each_version.get('location')
         Hive.MissingVersion(version)
 
     def version(self):
