@@ -30,6 +30,10 @@ hive_v4 = {
     }
 }
 
+hive_vfree = {
+    "name": "test_hive",
+}
+
 def fake_download_as_json(url):
     hives = {
         "url_for_version_4": hive_v4,
@@ -90,3 +94,16 @@ class HiveTest(unittest.TestCase):
             self.hive.from_version(5),
             self.hive
         )
+
+    def test_no_hive_version(self):
+        hive = beekeeper.hive.Hive(**hive_vfree)
+        self.assertEqual(hive.version(), None)
+
+    def test_available_versions_no_info(self):
+        hive = beekeeper.hive.Hive(**hive_vfree)
+        self.assertEqual(hive.other_versions(), [])
+
+    def test_find_version_url_no_info(self):
+        hive = beekeeper.hive.Hive(**hive_vfree)
+        with self.assertRaises(KeyError):
+            hive.get_version_url(5
