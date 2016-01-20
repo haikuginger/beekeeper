@@ -148,3 +148,8 @@ class VariablesTest(unittest.TestCase):
     def test_missing_vars(self):
         self.variables.add(a=variable_3)
         self.assertEqual(self.variables.missing_vars(), ['a'])
+
+    def test_keyword_named_variable(self):
+        self.variables.add(**{'from':variable_3})
+        self.assertIn('_from', self.variables)
+        self.assertEqual(self.variables['_from']['name'], 'from')

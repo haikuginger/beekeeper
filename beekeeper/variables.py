@@ -6,6 +6,7 @@ from __future__ import absolute_import, division
 from __future__ import unicode_literals, print_function
 
 from functools import partial
+from keyword import iskeyword
 
 DEFAULT_VARIABLE_TYPE = 'url_param'
 
@@ -123,6 +124,9 @@ class Variables(dict):
         object.
         """
         for name, var in kwargs.items():
+            if iskeyword(name):
+                var['name'] = name
+                name = '_' + name
             if name in self:
                 self[name] = merge(self[name], Variable(**var))
             else:
