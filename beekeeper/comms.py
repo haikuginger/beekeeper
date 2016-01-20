@@ -43,10 +43,6 @@ class Request(object):
         self.action = action
         self.variables = variables
         self.verbose = verbose
-        self.output = {}
-        self.output['data'] = None
-        self.output['headers'] = {}
-        self.output['url'] = self.action.endpoint.url() + '?'
         self.render_variables()
 
     def render_variables(self):
@@ -54,10 +50,15 @@ class Request(object):
         Take the variables passed in during init and parse them
         into the base level variables we can actually do stuff with.
         """
+        self.params = {}
+        self.output = {}
+        self.output['data'] = None
+        self.output['headers'] = {}
+        self.output['url'] = self.action.endpoint.url()
         for var_type in self.variables.types():
             for var in render(var_type, **self.variables.vals(var_type)):
                 self.set(var)
-        self.output['url'] = self.output['url'][:len(self.output['url'])-1]
+        self.output['url'] = self.output['url'] + self.param_string()
 
     def print_out(self):
         """
@@ -117,12 +118,17 @@ class Request(object):
         """
         Set the base-level URL parameter variable to have the given value
         """
-        self.output['url'] += urlencode({param['name']: param['value']}) + '&'
+        self.params[param['name']] = param['value']
 
     def set_url_replacement(self, rep):
         url = self.output['url']
         url = str(rep['value']).join(url.split('{{{}}}'.format(rep['name'])))
         self.output['url'] = url
+
+    def param_string(self):
+        if self.params:
+            return '?' + urlencode(self.params)
+        return ''
 
 class Response(object):
 
