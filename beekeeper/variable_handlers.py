@@ -87,4 +87,5 @@ VARIABLE_TYPES = {
 
 def render(var_type, **values):
     if var_type in VARIABLE_TYPES:
-        return VARIABLE_TYPES[var_type](**values)
+        variables = {val.pop('name', name): val for name, val in values.items()}
+        return VARIABLE_TYPES[var_type](**variables)
