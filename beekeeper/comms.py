@@ -7,9 +7,11 @@ from __future__ import unicode_literals, print_function
 
 try:
     from urllib2 import Request as PythonRequest, urlopen, HTTPError
+    from urllib import urlencode
 except ImportError:
     from urllib.request import Request as PythonRequest, urlopen
     from urllib.error import HTTPError
+    from urllib.parse import urlencode
 
 import json
 
@@ -115,7 +117,7 @@ class Request(object):
         """
         Set the base-level URL parameter variable to have the given value
         """
-        self.output['url'] += '{}={}&'.format(param['name'], param['value'])
+        self.output['url'] += urlencode({param['name']: param['value']}) + '&'
 
     def set_url_replacement(self, rep):
         url = self.output['url']
