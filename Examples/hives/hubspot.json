@@ -40,7 +40,13 @@
                 },
                 "update": {
                     "endpoint": "SingleContact",
-                    "method": "PUT"
+                    "method": "PUT",
+                    "variables": {
+                        "contact": {
+                            "type": "data",
+                            "mimetype": "application/json"
+                        }
+                    }
                 },
                 "get": {
                     "endpoint": "SingleContact"

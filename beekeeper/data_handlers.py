@@ -68,6 +68,8 @@ MIMETYPES = {
 def code(action, data, mimetype, encoding='utf-8'):
     if action == 'dump' and isinstance(data, bytes):
         return getattr(Binary, action)(data, encoding)
+    if action == 'load' and not data:
+        return None
     if action == 'load' and mimetype not in MIMETYPES:
         return getattr(Binary, action)(data, encoding)
     if mimetype in MIMETYPES and getattr(MIMETYPES[mimetype], action, None):
