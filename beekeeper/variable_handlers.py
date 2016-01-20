@@ -66,10 +66,10 @@ def multipart(**values):
             args = (boundary, name, value.get('filename', uuid4().hex), value['mimetype'])
         else:
             this_frame = frame + '\n\n'
-            this_data = bytes(value['value'], encoding='ascii')
+            this_data = value['value'].encode('ascii')
             args = (boundary, name)
-        output += bytes(this_frame.format(*args), encoding='ascii') + this_data
-    output += bytes('\n--{}--'.format(boundary), encoding='ascii')
+        output += this_frame.format(*args).encode('ascii') + this_data
+    output += '\n--{}--'.format(boundary).encode('ascii')
     yield {'type': 'data', 'data': output}
     yield content_type_header('multipart/form-data; boundary={}'.format(boundary))
 
