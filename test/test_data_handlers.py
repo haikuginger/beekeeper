@@ -46,3 +46,8 @@ class TestParams(unittest.TestCase):
 
     def test_encode(self):
         self.assertEqual(encode(self.test_params, 'application/x-www-form-urlencoded'), self.proper_output)
+
+class TestEmptyData(unittest.TestCase):
+
+    def test_empty_data(self):
+        self.assertEqual(decode(bytes(), 'application/json'), None)
