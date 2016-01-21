@@ -103,8 +103,19 @@ class APIObjectInstance(object):
     an APIObject; basically, the point is to execute an action with the subscripted
     key passed to it, as below; the two statements are equivalent:
 
-    ExampleAPI.Objects[123].update(varname=value)
-    ExampleAPI.Objects.update(object_id=123, varname=value)
+    >>> ExampleAPI.Objects[123].update(varname=value)
+
+    >>> ExampleAPI.Objects.update(object_id=123, varname=value)
+
+    If assigned to a variable, it can be used directly - generally useful when
+    subscripting gives you access to an object that can be used to access other
+    objects; an example from the MBTA API:
+
+    >>> OrangeLine = mbta.Routes['Orange']
+
+    >>> OrangeLine.stops()
+
+    >>> OrangeLine.alerts()
     """
 
     def __init__(self, api_object, id_key):
