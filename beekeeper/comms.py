@@ -190,3 +190,10 @@ class Response(object):
         format, if such couldn't be pulled automatically.
         """
         return decode(self.data, self.mimetype(), encoding=self.encoding())
+
+    def read_raw(self):
+        """
+        Return the bytes we got from the server without any extra
+        decoding or anything; could be useful for debugging.
+        """
+        return self.data
