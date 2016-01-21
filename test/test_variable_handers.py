@@ -4,6 +4,13 @@ import unittest
 
 from beekeeper.variable_handlers import render, content_type_header, identity
 
+import beekeeper.variable_handlers
+
+class fakeuuid:
+
+    def __init__(self):
+        self.hex = 'xxx'
+
 class VariableHandlerTest(unittest.TestCase):
 
     def test_content_type(self):
@@ -57,5 +64,42 @@ class VariableHandlerTest(unittest.TestCase):
         result = list(render('bearer_token', any_var_name = dict(value='PUT_YOUR_TOKEN_HERE')))
         self.assertEqual(result, expected)
 
-    #Can't reliably test multipart/form-data yet, since it uses random
-    #separators; cookies aren't implemented yet.
+    def test_multiple_bearer(self):
+        with self.assertRaises(Exception):
+            render('bearer_token', {'val1': 'thing', 'val2': 'otherthing'})
+
+    def test_multiple_data(self):
+        with self.assertRaises(Exception):
+            render('data', {'val1': 'thing1', 'val2': 'thing2'})
+
+    def test_http_form(self):
+        x = render('http_form', x={'value':'whatever'}, y={'value':'thing'})
+        x = list(x)
+        self.assertEqual(x[0], {'name': 'Content-Type', 'value': 'application/x-www-form-urlencoded', 'type': 'header'})
+        assert (x[1] == {'data': b'y=thing&x=whatever', 'type': 'data'} or 
+                x[1] == {'data': b'x=whatever&y=thing', 'type': 'data'})
+
+    def test_multipart(self):
+        self.old_uuid4 = beekeeper.variable_handlers.uuid4
+        beekeeper.variable_handlers.uuid4 = fakeuuid
+        should = ('\n--xxx\nContent-Disposition: form-data; name="x"\n\nwhatever'
+                  '\n--xxx\nContent-Disposition: form-data; name="y"; filename="thing.name"'
+                  '\nContent-Type: text/plain\n\nplaintexthere\n--xxx--')
+        othershould = ('\n--xxx\nContent-Disposition: form-data; name="y"; filename="thing.name"'
+                       '\nContent-Type: text/plain\n\nplaintexthere'
+                       '\n--xxx\nContent-Disposition: form-data; name="x"\n\nwhatever\n--xxx--')
+        should = {'type': 'data', 'data': should.encode('utf-8')}
+        othershould = {'type': 'data', 'data': othershould.encode('utf-8')}
+        x = render('multipart', x={'value': 'whatever'}, 
+            y={'value':'plaintexthere', 'mimetype':'text/plain', 'filename':'thing.name'})
+        x = list(x)
+        assert (x[0] == should or x[0] == othershould)
+        self.assertEqual(x[1], {'name': 'Content-Type', 'value': 'multipart/form-data; boundary=xxx', 'type':'header'})
+        beekeeper.variable_handlers.uuid4 = self.old_uuid4
+
+    def test_cookies(self):
+        should = 'thing1; thing2'
+        othershould = 'thing2; thing1'
+        data = {'a': {'value': 'thing1'}, 'b': {'value': 'thing2'}}
+        result = list(render('cookie', **data))[0]
+        self.assertIn(result['value'], [should, othershould])

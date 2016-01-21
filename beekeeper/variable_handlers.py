@@ -32,7 +32,14 @@ def render_data(**data):
             yield {'type': 'data', 'data': encode(val['value'], val['mimetype'])}
 
 def http_form(**values):
-    form = {'x': {'value': values, 'mimetype': 'application/x-www-form-urlencoded'}}
+    form = {
+        'x': {
+            'mimetype': 'application/x-www-form-urlencoded',
+            'value': {
+                name: val['value'] for name, val in values.items()
+            }
+        }
+    }
     return render('data', **form)
 
 def basic_auth(**values):
