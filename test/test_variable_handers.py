@@ -76,8 +76,7 @@ class VariableHandlerTest(unittest.TestCase):
         x = render('http_form', x={'value':'whatever'}, y={'value':'thing'})
         x = list(x)
         self.assertEqual(x[0], {'name': 'Content-Type', 'value': 'application/x-www-form-urlencoded', 'type': 'header'})
-        assert (x[1] == {'data': b'y=thing&x=whatever', 'type': 'data'} or 
-                x[1] == {'data': b'x=whatever&y=thing', 'type': 'data'})
+        self.assertIn(x[1]['data'], [b'y=thing&x=whatever', b'x=whatever&y=thing'])
 
     def test_multipart(self):
         self.old_uuid4 = beekeeper.variable_handlers.uuid4
@@ -90,11 +89,11 @@ class VariableHandlerTest(unittest.TestCase):
                        '\n--xxx\nContent-Disposition: form-data; name="x"\n\nwhatever\n--xxx--')
         should = {'type': 'data', 'data': should.encode('utf-8')}
         othershould = {'type': 'data', 'data': othershould.encode('utf-8')}
-        x = render('multipart', x={'value': 'whatever'}, 
+        x = render('multipart', x={'value': 'whatever'},
             y={'value':'plaintexthere', 'mimetype':'text/plain', 'filename':'thing.name'})
         x = list(x)
-        assert (x[0] == should or x[0] == othershould)
-        self.assertEqual(x[1], {'name': 'Content-Type', 'value': 'multipart/form-data; boundary=xxx', 'type':'header'})
+        self.assertIn(x[0], [should, othershould])
+        self.assertEqual(x[1]['value'],'multipart/form-data; boundary=xxx')
         beekeeper.variable_handlers.uuid4 = self.old_uuid4
 
     def test_cookies(self):
