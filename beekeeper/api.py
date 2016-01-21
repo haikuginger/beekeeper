@@ -67,7 +67,7 @@ class APIObject(object):
     def __init__(self, parent, actions, **kwargs):
         self.description = kwargs.get('description', None)
         self.id_variable = kwargs.get('id_variable', None)
-        if self.id_variable and iskeyword(self.id_variable):
+        if iskeyword(self.id_variable):
             self.id_variable = '_' + self.id_variable
         self.actions = {}
         for name, action in actions.items():
