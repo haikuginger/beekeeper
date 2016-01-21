@@ -8,6 +8,7 @@ from __future__ import unicode_literals, print_function
 
 import copy
 from functools import partial
+from keyword import iskeyword
 
 from beekeeper.variables import Variables
 from beekeeper.hive import Hive
@@ -89,6 +90,8 @@ class APIObject(object):
         """
         Add a single Action to the APIObject.
         """
+        if iskeyword(name):
+            name = '_' + name
         self.actions[name] = parent.new_action(**action)
         setattr(self, name, self.actions[name].execute)
 
@@ -211,6 +214,8 @@ class API(object):
         Initialize an APIObject with the given name and make it available
         using dot notation from the top-level namespace.
         """
+        if iskeyword(name)
+        name = '_' + name
         setattr(self, name, APIObject(self, **obj))
 
     def new_action(self, endpoint, **kwargs):
