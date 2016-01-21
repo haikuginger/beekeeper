@@ -22,7 +22,7 @@
         }
     },
     "objects": {
-        "User": {
+        "Users": {
             "description": "A Reddit user",
             "id_variable": "username",
             "actions": {
