@@ -82,11 +82,17 @@ class Variable(dict):
             yield DEFAULT_VARIABLE_TYPE
 
     def has_no_type(self):
+        """
+        Does the Variable have a defined type?
+        """
         if not self['types']:
             return True
         return False
 
     def value(self):
+        """
+        Get the value of the variable, if defined.
+        """
         return self.get('value', None)
 
 class Variables(dict):

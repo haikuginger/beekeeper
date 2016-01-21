@@ -37,7 +37,7 @@ class Endpoint(object):
         """
         Combine the API-level root URL with the Endpoint's path.
         """
-        return self.parent._root + self.path
+        return self.parent.base_url() + self.path
 
     def new_action(self, method='GET', **kwargs):
         """
@@ -214,8 +214,8 @@ class API(object):
         Initialize an APIObject with the given name and make it available
         using dot notation from the top-level namespace.
         """
-        if iskeyword(name)
-        name = '_' + name
+        if iskeyword(name):
+            name = '_' + name
         setattr(self, name, APIObject(self, **obj))
 
     def new_action(self, endpoint, **kwargs):
@@ -230,3 +230,9 @@ class API(object):
         Provide the API-level MIME type.
         """
         return self._mimetype
+
+    def base_url(self):
+        """
+        Provides the API base URL.
+        """
+        return self._root

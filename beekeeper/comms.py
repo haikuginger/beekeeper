@@ -121,11 +121,17 @@ class Request(object):
         self.params[param['name']] = param['value']
 
     def set_url_replacement(self, rep):
+        """
+        Do a partial format of the string with just the variable in question
+        """
         url = self.output['url']
         url = str(rep['value']).join(url.split('{{{}}}'.format(rep['name'])))
         self.output['url'] = url
 
     def param_string(self):
+        """
+        urlencode all known params, add a ? to the front, and return.
+        """
         if self.params:
             return '?' + urlencode(self.params)
         return ''
