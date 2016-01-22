@@ -4,8 +4,7 @@
     "mimetype": "application/json",
     "variables": {
         "User-Agent": {
-            "type": "header",
-            "value": "Beekeeperbot/0.3a"
+            "type": "header"
         }
     },
     "endpoints": {
