@@ -28,6 +28,13 @@ Requirements
 beekeeper requires Python 2.7.9/3.4.3 or higher and their built-in
 modules.
 
+Installation
+------------
+
+.. code:: python
+
+   pip install beekeeper
+
 Usage
 -----
 
