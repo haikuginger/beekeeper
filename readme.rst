@@ -47,28 +47,28 @@ look something like this:
 
     from beekeeper import API
     myAPI = API.from_hive_file('fname.json')
-    myAPI.Widgets.action(id='foo', argument='bar')
+    x = myAPI.Widgets.action(id='foo', argument='bar')
 
 If the hive developer defines an ID variable for the object you're working
 with, you can subscript, dictionary style:
 
 .. code:: python
 
-    myAPI.Widgets['foo'].action(argument='bar')
+    x = myAPI.Widgets['foo'].action(argument='bar')
 
 If you've only got one remaining argument in the method call, you don't even
 need to name it! You can do something like this:
 
 .. code:: python
 
-   myAPI.Widgets['foo'].action('bar')
+   x = myAPI.Widgets['foo'].action('bar')
 
 This also holds true if you have multiple variables, but the other ones are
 assigned by name:
 
 .. code:: python
 
-   myAPI.Widgets['foo'].action('bar', var2='baz')
+   x = myAPI.Widgets['foo'].action('bar', var2='baz')
 
 If you're using a hive file, then it should define which variables are needed.
 If you try to call a function without filling in that variable, it should
@@ -76,6 +76,16 @@ automatically yell at you and tell you what variables are missing. Since these
 variables are defined within the hive, beekeeper will do the work for you, 
 automatically determine what data type a particular variable is, and put it
 exactly where it needs to go.
+
+Beekeeper will also automatically handle parsing data. When you
+send data, beekeeper will read the MIME type that was defined in the variable
+for that data, and try to automatically move it from a "Python" format (e.g., 
+a dictionary) to the right REST API format (e.g., JSON).
+
+This holds true in the other direction as well; beekeeper will read the MIME
+type of the response data, and hand it back to you in a Pythonic format! If
+beekeeper doesn't know how to handle the data, it'll just give you the raw
+bytes so that you can do what you need to with them.
 
 Notes
 -----
