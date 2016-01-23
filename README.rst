@@ -3,6 +3,8 @@
 beekeeper
 =========
 
+`Read the docs! <http://beekeeper.readthedocs.org/en/latest/index.html>`_
+
 Description
 -----------
 
