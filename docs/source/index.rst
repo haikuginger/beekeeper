@@ -14,14 +14,5 @@ Contents:
    why
    what
    how_to_use
+   how_does_it_work
    README
-
-
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
-

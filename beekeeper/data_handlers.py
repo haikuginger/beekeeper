@@ -62,7 +62,8 @@ MIMETYPES = {
     'application/json': JSONParser,
     'application/x-www-form-urlencoded': HTTPFormEncoder,
     'text/plain': PlainText,
-    'text/html': PlainText
+    'text/html': PlainText,
+    'application/octet-stream': Binary
 }
 
 def code(action, data, mimetype, encoding='utf-8'):
