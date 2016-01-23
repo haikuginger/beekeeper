@@ -38,7 +38,8 @@ class VariableTest(unittest.TestCase):
                 'type1_2',
                 'type2_1'
             ],
-            'optional': True
+            'optional': True,
+            'filename': None
         }
         result2 = {
             'value': 'value2',
@@ -48,7 +49,8 @@ class VariableTest(unittest.TestCase):
                 'type1_1',
                 'type1_2'
             ],
-            'optional': False
+            'optional': False,
+            'filename': None
         }
         self.assertEqual(merge(variable_1, variable_2), result2)
         self.assertEqual(merge(variable_2, variable_1), result1)
