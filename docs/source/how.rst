@@ -31,7 +31,7 @@ makes:
     ['RT6330', 'PV46', 'GX280']
 
 We didn't need to pass any special variables to the API for this request
-outside of what's automatically handled by the already, so it's very simple.
+outside of what's automatically handled already, so it's very simple.
 Beekeeper also handles parsing the returned data into a Pythonic format, so
 it's easy to iterate across and subscript into.
 
