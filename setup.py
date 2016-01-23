@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 setup(
     name = "beekeeper",
-    version = "0.6",
+    version = "0.6.1",
     packages = ['beekeeper'],
     author = "Jesse Shapiro",
     author_email = "jesse@bedrockdata.com",
