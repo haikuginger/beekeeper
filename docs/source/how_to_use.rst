@@ -12,10 +12,11 @@ is compatible with a variety of products from other vendors, and FooBar
 Ventures also maintains a list of compatible products which can be accessed
 via the API.
 
-First, we'll need to initialize the FooBar Ventures API:
+First, we'll need to import beekeeper and initialize the FooBar Ventures API:
 
 .. code:: python
-
+    >>> from beeekeeper import API
+    
     >>> fbv = API.from_domain('foobar.com')
 
 Then, let's say we want to get a list of all the widgets that FooBar
