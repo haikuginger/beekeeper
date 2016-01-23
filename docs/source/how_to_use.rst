@@ -15,6 +15,7 @@ via the API.
 First, we'll need to import beekeeper and initialize the FooBar Ventures API:
 
 .. code:: python
+
     >>> from beeekeeper import API
     
     >>> fbv = API.from_domain('foobar.com')
