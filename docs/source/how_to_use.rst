@@ -1,8 +1,5 @@
-How?
-====
-
 How do I use it?
-----------------
+====
 
 Using beekeeper is pretty simple, but because it can work with almost
 any RESTful API, it's also a little tricky to describe. Let's take

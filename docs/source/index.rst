@@ -11,10 +11,10 @@ Contents:
 .. toctree::
    :maxdepth: 2
 
-   README
    why
    what
-   how
+   how_to_use
+   README
 
 
 
