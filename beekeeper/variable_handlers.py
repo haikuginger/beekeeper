@@ -68,9 +68,10 @@ def multipart(**values):
     output = bytes()
     for name, value in values.items():
         if name in files:
+            fname = value.get('filename', uuid4().hex)
             this_frame = frame + '; filename="{}"\nContent-Type: {}\n\n'
             this_data = encode(value['value'], value['mimetype'])
-            args = (boundary, name, value.get('filename', uuid4().hex), value['mimetype'])
+            args = (boundary, name, fname, value['mimetype'])
         else:
             this_frame = frame + '\n\n'
             this_data = value['value'].encode('ascii')
