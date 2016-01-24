@@ -107,6 +107,26 @@ class Variables(dict):
         self.add(**kwargs)
         self.replacements = partial(self.vals, 'url_replacement')
 
+    def required_names(self):
+        for name, var in self.items():
+            if not var.get('optional', False):
+                yield name
+
+    def optional_names(self):
+        for name, var in self.items():
+            if var.get('optional', False):
+                yield name
+
+    def required_namestring(self):
+        return ', '.join(self.required_names())
+
+    def optional_namestring(self):
+        opt_names = list(self.optional_names())
+        if opt_names:
+            return '[, {}]'.format(', '.join(opt_names))
+        else:
+            return ''
+
     def types(self):
         """
         Return a list of all the variable types that exist in the

@@ -65,11 +65,11 @@ class APIObject(object):
     """
 
     def __init__(self, parent, actions, **kwargs):
-        self.description = kwargs.get('description', None)
-        self.id_variable = kwargs.get('id_variable', None)
-        if iskeyword(self.id_variable):
-            self.id_variable = '_' + self.id_variable
-        self.actions = {}
+        self._description = kwargs.get('description', None)
+        self._id_variable = kwargs.get('id_variable', None)
+        if iskeyword(self._id_variable):
+            self._id_variable = '_' + self._id_variable
+        self._actions = {}
         for name, action in actions.items():
             self.add_action(name, parent, action)
 
@@ -78,7 +78,7 @@ class APIObject(object):
         Allows us to subscript, dictionary-style, on the object if we
         know what the object's unique key is.
         """
-        if self.id_variable:
+        if self._id_variable:
             return APIObjectInstance(self, key)
         raise TypeError('Object cannot be addressed by ID')
 
@@ -86,7 +86,7 @@ class APIObject(object):
         """
         Get a list of the available Actions on the APIObject.
         """
-        return [name for name in self.actions]
+        return [name for name in self._actions]
 
     def add_action(self, name, parent, action):
         """
@@ -94,8 +94,22 @@ class APIObject(object):
         """
         if iskeyword(name):
             name = '_' + name
-        self.actions[name] = parent.new_action(**action)
-        setattr(self, name, self.actions[name].execute)
+        self._actions[name] = parent.new_action(**action)
+        setattr(self, name, self._actions[name].execute)
+
+    def printed_out(self, name):
+        out = ''
+        out += '|\n'
+        if self._id_variable:
+            subs = '[{}]'.format(self._id_variable)
+        else:
+            subs = ''
+        out += '|---{}{}\n'.format(name, subs)
+        if self._description:
+            out += '|   |   {}\n'.format(self._description)
+        for name, action in self._actions.items():
+            out += action.printed_out(name)
+        return out
 
 class APIObjectInstance(object):
     """
@@ -119,9 +133,10 @@ class APIObjectInstance(object):
     """
 
     def __init__(self, api_object, id_key):
-        self.api_object = api_object
-        self.id_key = id_key
-        self.actions = api_object.defined_actions
+        self._api_object = api_object
+        self._id_key = id_key
+        self._actions = api_object.defined_actions
+        self._id_variable = api_object._id_variable
 
     def __getattr__(self, name):
         """
@@ -129,9 +144,9 @@ class APIObjectInstance(object):
         partial with the ID variable set to have the value passed during
         initialization.
         """
-        if name in self.actions():
-            action = getattr(self.api_object, name)
-            return partial(action, **{self.api_object.id_variable: self.id_key})
+        if name in self._actions():
+            action = getattr(self._api_object, name)
+            return partial(action, **{self._id_variable: self._id_key})
         else:
             raise AttributeError
 
@@ -147,6 +162,7 @@ class Action(object):
         self.vars = Variables(**kwargs.get('variables', {}))
         self.mimetype = kwargs.get('mimetype', None)
         self.url = endpoint.url
+        self.description = kwargs.get('description', None)
 
     def variables(self):
         """
@@ -176,6 +192,16 @@ class Action(object):
         else:
             return self.endpoint.format()
 
+    def printed_out(self, name):
+        opt = self.variables().optional_namestring()
+        req = self.variables().required_namestring()
+        out = ''
+        out += '|   |\n'
+        out += '|   |---{}({}{})\n'.format(name, req, opt)
+        if self.description:
+            out += '|   |       {}\n'.format(description)
+        return out
+
 class API(object):
 
     """
@@ -187,6 +213,9 @@ class API(object):
         self._mimetype = hive.get('mimetype', 'application/json')
         self._vars = Variables(**hive.get('variables', {})).fill(*args, **kwargs)
         self._endpoints = {}
+        self._description = hive.get('description', None)
+        self._name = hive.get('name', None)
+        self._objects = {}
         for name, endpoint in hive['endpoints'].items():
             self.add_endpoint(name, **endpoint)
         for name, obj in hive['objects'].items():
@@ -210,6 +239,17 @@ class API(object):
         version = kwargs.pop('version', None)
         return cls(Hive.from_url(url, version), *args, **kwargs)
 
+    def __repr__(self):
+        out = ''
+        req_var = self.variables().required_namestring()
+        opt_var = self.variables().optional_namestring()
+        out += '{}({}{})\n'.format(self._name, req_var, opt_var)
+        if self._description:
+            out += '|   {}\n'.format(self._description)
+        for name, obj in self._objects.items():
+            out += obj.printed_out(name)
+        return out
+
     def variables(self):
         """
         Return a copy of the API-level variables.
@@ -230,6 +270,7 @@ class API(object):
         if iskeyword(name):
             name = '_' + name
         setattr(self, name, APIObject(self, **obj))
+        self._objects[name] = getattr(self, name)
 
     def new_action(self, endpoint, **kwargs):
         """
