@@ -115,3 +115,12 @@ should go into "cc_number".
 
 And that's all there is to using beekeeper! It's simple, fast, and makes
 working with remote APIs much, much, much easier.
+
+If you're not sure what objects and actions are available for an API, you can
+easily see the structure by just doing the following:
+
+.. code:: python
+
+    >>> print(fbv)
+
+It'll give you a nice printout so you can see where you need to go.
