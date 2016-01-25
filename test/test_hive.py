@@ -71,7 +71,7 @@ class HiveTest(unittest.TestCase):
 
     def testMissingVersion(self):
         with self.assertRaises(KeyError):
-            beekeeper.Hive.MissingVersion(10)
+            beekeeper.Hive.missing_version(10)
 
     def test_from_version(self):
         self.assertEqual(
