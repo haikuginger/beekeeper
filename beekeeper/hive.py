@@ -51,7 +51,7 @@ class Hive(dict):
         for each_version in self.other_versions():
             if version == each_version['version'] and 'location' in each_version:
                 return each_version.get('location')
-        Hive.MissingVersion(version)
+        Hive.missing_version(version)
 
     def version(self):
         """
@@ -66,7 +66,7 @@ class Hive(dict):
         return self.get('versioning', {}).get('previous_versions', [])
 
     @staticmethod
-    def MissingVersion(version):
+    def missing_version(version):
         """
         Raise an exception stating we couldn't find the version URL in the hive.
         """

@@ -111,6 +111,9 @@ class APIObject(object):
             out += action.printed_out(name)
         return out
 
+    def id_variable(self):
+        return self._id_variable
+
 class APIObjectInstance(object):
     """
     Ephemeral class that gets created/destroyed when the developer subscripts
@@ -136,7 +139,7 @@ class APIObjectInstance(object):
         self._api_object = api_object
         self._id_key = id_key
         self._actions = api_object.defined_actions
-        self._id_variable = api_object._id_variable
+        self._id_variable = api_object.id_variable()
 
     def __getattr__(self, name):
         """
@@ -199,7 +202,7 @@ class Action(object):
         out += '|   |\n'
         out += '|   |---{}({}{})\n'.format(name, req, opt)
         if self.description:
-            out += '|   |       {}\n'.format(description)
+            out += '|   |       {}\n'.format(self.description)
         return out
 
 class API(object):
