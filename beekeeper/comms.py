@@ -17,7 +17,6 @@ import json
 
 from beekeeper.variable_handlers import render
 from beekeeper.data_handlers import decode
-from beekeeper.exceptions import ResponseException
 
 def download_as_json(url):
     """
@@ -198,3 +197,11 @@ class Response(object):
             return decode(self.data, self.mimetype(), encoding=self.encoding())
         else:
             return self.data
+
+class ResponseException(Response, Exception):
+
+    def __init__(self, action, response):
+        Response.__init__(self, action, response)
+
+    def __str__(self):
+        return 'Error message: {}/{}'.format(self.code, self.message)
