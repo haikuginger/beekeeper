@@ -166,6 +166,7 @@ class Action(object):
         self.mimetype = kwargs.get('mimetype', None)
         self.url = endpoint.url
         self.description = kwargs.get('description', None)
+        self.traversal = kwargs.get('traverse', None)
 
     def variables(self):
         """
@@ -178,12 +179,11 @@ class Action(object):
         """
         Fill all variables from *args and **kwargs, build the request,
         and send it. If we set the _verbose kwarg to true, then we'll
-        get a Response object back instead of loaded data, and we'll also
-        print the information that we're sending to the server.
+        get a Response object back instead of loaded data.
         """
         _verbose = kwargs.pop('_verbose', False)
         variables = self.variables().fill(*args, **kwargs)
-        return Request(self, variables, verbose=_verbose).send()
+        return Request(self, variables, traversal = self.traversal, _verbose=_verbose).send()
 
     def format(self):
         """

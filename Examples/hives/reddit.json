@@ -41,7 +41,11 @@
                             "type": "url_replacement",
                             "value": "comments"
                         }
-                    }
+                    },
+                    "traverse": [
+                        "data",
+                        "thingy"
+                    ]
                 },
                 "submitted": {
                     "endpoint": "user",

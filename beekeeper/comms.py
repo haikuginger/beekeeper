@@ -17,6 +17,7 @@ import json
 
 from beekeeper.variable_handlers import render
 from beekeeper.data_handlers import decode
+from beekeeper.exceptions import TraversalError
 
 def download_as_json(url):
     """
@@ -41,10 +42,11 @@ class Request(object):
     an HTTP request with the data passed to it
     """
 
-    def __init__(self, action, variables, verbose=False):
+    def __init__(self, action, variables, traversal=None, _verbose=False):
         self.action = action
         self.variables = variables
-        self.verbose = verbose
+        self.verbose = _verbose
+        self.traversal = traversal
         self.render_variables()
 
     def render_variables(self):
@@ -62,33 +64,18 @@ class Request(object):
                 self.set(var)
         self.output['url'] = self.output['url'] + self.param_string()
 
-    def print_out(self):
-        """
-        Print out the three base level variables of the request.
-        """
-        print('URL: {}'.format(self.output['url']))
-        print('Headers:')
-        if self.output['headers']:
-            for name, val in self.output['headers'].items():
-                print('{}: {}'.format(name, val))
-        else:
-            print('None')
-        print('Data:')
-        if self.output['data']:
-            print(self.output['data'].decode('utf-8'))
-
     def send(self):
         """
         Send the request defined by the data stored in the object.
         """
         try:
-            if self.verbose:
-                self.print_out()
-                return Response(self.format(), request(**self.output))
-            else:
-                return Response(self.format(), request(**self.output)).read()
+            x = Response(self.action.format(), request(**self.output))
         except HTTPError as e:
             raise ResponseException(self.format(), e)
+        if self.verbose:
+            return x
+        else:
+            return x.read(traversal=self.traversal)
 
     def set(self, variable):
         """
@@ -183,16 +170,42 @@ class Response(object):
             return self.headers.get('Set-Cookie').split('; ')
         return []
 
-    def read(self, raw=False):
+    def read(self, raw=False, traversal=None):
         """
         Parse the body of the response using the Content-Type
         header we pulled from the response, or the hive-defined
         format, if such couldn't be pulled automatically.
         """
         if not raw:
-            return decode(self.data, self.mimetype(), encoding=self.encoding())
+            response_body = decode(self.data, self.mimetype(), encoding=self.encoding())
+            if traversal:
+                response_body = traverse(response_body, *traversal)
+            return response_body
         else:
             return self.data
+
+def traverse(obj, *path, **kwargs):
+    if path:
+        if type(obj) is list:
+            return [traverse(x, *path) for x in obj]
+        elif type(obj) is dict:
+            if type(path[0]) is list:
+                return {name: traverse(obj[name], *path[1:], split=True) for name in path[0]}
+            elif type(path[0]) is not str:
+                raise TraversalError(obj, path[0])
+            elif path[0] == '*':
+                return {name: traverse(item, *path[1:]) for name, item in obj.items()}
+            elif path[0] in obj:
+                return traverse(obj[path[0]], *path[1:])
+            else:
+                raise TraversalError(obj, path[0])
+        else:
+            if kwargs.get('split', False):
+                return obj
+            else:
+                raise TraversalError(obj, path[0])
+    else:
+        return obj
 
 class ResponseException(Response, Exception):
 

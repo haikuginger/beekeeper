@@ -6,6 +6,7 @@ from __future__ import absolute_import, division
 from __future__ import unicode_literals, print_function
 
 import json
+import os
 
 from beekeeper.comms import download_as_json, ResponseException
 from beekeeper.exceptions import MissingHive, VersionNotInHive
