@@ -73,10 +73,10 @@
                     "method": "PUT"
                 },
                 "get": {
-                    "endpoint": "EndpointTwo",
+                    "endpoint": "EndpointTwo"
                 },
                 "list": {
-                    "endpoint": "EndpointThree",
+                    "endpoint": "EndpointThree"
                 }
             }
         }
