@@ -22,8 +22,10 @@ def download_as_json(url):
     """
     Download the data at the URL and load it as JSON
     """
-    return json.loads(request(url=url).read().decode('utf-8'))
-
+    try:
+        return Response('application/json', request(url=url)).read()
+    except HTTPError as e:
+        raise ResponseException('application/json', e)
 def request(*args, **kwargs):
     """
     Make a request with the received arguments and return an
@@ -82,11 +84,11 @@ class Request(object):
         try:
             if self.verbose:
                 self.print_out()
-                return Response(self.action, request(**self.output))
+                return Response(self.format(), request(**self.output))
             else:
-                return Response(self.action, request(**self.output)).read()
+                return Response(self.format(), request(**self.output)).read()
         except HTTPError as e:
-            raise ResponseException(self.action, e)
+            raise ResponseException(self.format(), e)
 
     def set(self, variable):
         """
@@ -128,7 +130,7 @@ class Request(object):
         Do a partial format of the string with just the variable in question
         """
         url = self.output['url']
-        url = str(rep['value']).join(url.split('{{{}}}'.format(rep['name'])))
+        url = str(rep['value']).join(url.split('{' + rep['name'] + '}'))
         self.output['url'] = url
 
     def param_string(self):
@@ -146,8 +148,8 @@ class Response(object):
     we get back from the API provider's server
     """
 
-    def __init__(self, action, response):
-        self.action = action
+    def __init__(self, raw_format, response):
+        self.raw_format = raw_format
         self.headers = response.headers
         self.data = response.read()
         self.code = response.getcode()
@@ -161,13 +163,7 @@ class Response(object):
         """
         if ';' in self.headers.get('Content-Type', ''):
             return self.headers['Content-Type'].split(';')[0]
-        return self.headers.get('Content-Type', self.format())
-
-    def format(self):
-        """
-        Get the hard-defined format of the parent action object
-        """
-        return self.action.format(direction='returns')
+        return self.headers.get('Content-Type', self.raw_format)
 
     def encoding(self):
         """

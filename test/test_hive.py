@@ -52,7 +52,7 @@ class HiveTest(unittest.TestCase):
         self.assertEqual(self.hive.get_version_url(4), 'url_for_version_4')
 
     def test_get_nonexistent_version_url(self):
-        with self.assertRaises(KeyError):
+        with self.assertRaises(beekeeper.hive.VersionNotInHive):
             self.hive.get_version_url(6)
 
     def test_version(self):
@@ -69,10 +69,6 @@ class HiveTest(unittest.TestCase):
             ]
         )
 
-    def testMissingVersion(self):
-        with self.assertRaises(KeyError):
-            beekeeper.Hive.missing_version(10)
-
     def test_from_version(self):
         self.assertEqual(
             self.hive.from_version(4),
@@ -80,7 +76,7 @@ class HiveTest(unittest.TestCase):
         )
 
     def test_from_bad_version(self):
-        with self.assertRaises(KeyError):
+        with self.assertRaises(beekeeper.hive.VersionNotInHive):
             self.hive.from_version(10)
 
     def test_from_empty_version(self):
@@ -105,5 +101,5 @@ class HiveTest(unittest.TestCase):
 
     def test_find_version_url_no_info(self):
         hive = beekeeper.hive.Hive(**hive_vfree)
-        with self.assertRaises(KeyError):
+        with self.assertRaises(beekeeper.hive.VersionNotInHive):
             hive.get_version_url(5)

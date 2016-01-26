@@ -185,13 +185,13 @@ class Action(object):
         variables = self.variables().fill(*args, **kwargs)
         return Request(self, variables, verbose=_verbose).send()
 
-    def format(self, direction='both'):
+    def format(self):
         """
         Get the local directional MIME type; if it doesn't exist, defer
         to the Endpoint-level MIME type.
         """
-        if self.mimetype and direction in self.mimetype:
-            return self.mimetype[direction]
+        if self.mimetype:
+            return self.mimetype
         else:
             return self.endpoint.format()
 

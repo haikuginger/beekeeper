@@ -7,7 +7,8 @@ from __future__ import unicode_literals, print_function
 
 import json
 
-from beekeeper.comms import download_as_json
+from beekeeper.comms import download_as_json, ResponseException
+from beekeeper.exceptions import MissingHive, VersionNotInHive
 
 class Hive(dict):
 
@@ -25,14 +26,20 @@ class Hive(dict):
         """
         Create a Hive object based on JSON located in a local file.
         """
-        return cls(**json.load(open(fname, 'r'))).from_version(version)
+        if os.path.exists(fname):
+            return cls(**json.load(open(fname, 'r'))).from_version(version)
+        else:
+            raise MissingHive(fname)
 
     @classmethod
     def from_url(cls, url, version=None):
         """
         Create a Hive object based on JSON located at a remote URL.
         """
-        return cls(**download_as_json(url)).from_version(version)
+        try:
+            return cls(**download_as_json(url)).from_version(version)
+        except ResponseException:
+            raise MissingHive(url)
 
     def from_version(self, version):
         """
@@ -51,7 +58,7 @@ class Hive(dict):
         for each_version in self.other_versions():
             if version == each_version['version'] and 'location' in each_version:
                 return each_version.get('location')
-        Hive.missing_version(version)
+        raise VersionNotInHive(version)
 
     def version(self):
         """
@@ -64,10 +71,3 @@ class Hive(dict):
         Generate a list of other versions in the hive.
         """
         return self.get('versioning', {}).get('previous_versions', [])
-
-    @staticmethod
-    def missing_version(version):
-        """
-        Raise an exception stating we couldn't find the version URL in the hive.
-        """
-        raise KeyError('Could not locate hive for version {}'.format(version))
