@@ -49,7 +49,12 @@
                     }
                 },
                 "get": {
-                    "endpoint": "SingleContact"
+                    "endpoint": "SingleContact",
+                    "traverse": [
+                        "properties",
+                        "*",
+                        "value"
+                    ]
                 }
             }
         }

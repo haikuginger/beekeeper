@@ -29,16 +29,21 @@ class TraversalError(Exception):
             for name, item in self.obj.items():
                 if type(item) is dict:
                     if item:
-                        output[name] = '{...}'
+                        output[name] = stwrapper('{...}')
                     else:
-                        output[name] = '{}'
+                        output[name] = stwrapper('{}')
                 elif type(item) is list:
                     if item:
-                        output[name] = '[...]'
+                        output[name] = stwrapper('[...]')
                     else:
-                        output[name] = '[]'
+                        output[name] = stwrapper('[]')
                 else:
                     output[name] = item
             return output
         else:
             return self.obj
+
+class stwrapper(str):
+
+    def __repr__(self):
+        return self
