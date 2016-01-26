@@ -17,6 +17,7 @@ import json
 
 from beekeeper.variable_handlers import render
 from beekeeper.data_handlers import decode
+from beekeeper.exceptions import ResponseException
 
 def download_as_json(url):
     """
@@ -79,11 +80,14 @@ class Request(object):
         """
         Send the request defined by the data stored in the object.
         """
-        if self.verbose:
-            self.print_out()
-            return Response(self.action, request(**self.output))
-        else:
-            return Response(self.action, request(**self.output)).read()
+        try:
+            if self.verbose:
+                self.print_out()
+                return Response(self.action, request(**self.output))
+            else:
+                return Response(self.action, request(**self.output)).read()
+        except HTTPError as e:
+            raise ResponseException(e)
 
     def set(self, variable):
         """
@@ -145,9 +149,10 @@ class Response(object):
 
     def __init__(self, action, response):
         self.action = action
-        self.headers = response.headers
+        self.headers = response.getheaders()
         self.data = response.read()
         self.code = response.getcode()
+        self.message = response.msg
 
     def mimetype(self):
         """
@@ -183,17 +188,13 @@ class Response(object):
             return self.headers.get('Set-Cookie').split('; ')
         return []
 
-    def read(self):
+    def read(self, decode=True):
         """
         Parse the body of the response using the Content-Type
         header we pulled from the response, or the hive-defined
         format, if such couldn't be pulled automatically.
         """
-        return decode(self.data, self.mimetype(), encoding=self.encoding())
-
-    def read_raw(self):
-        """
-        Return the bytes we got from the server without any extra
-        decoding or anything; could be useful for debugging.
-        """
-        return self.data
+        if decode:
+            return decode(self.data, self.mimetype(), encoding=self.encoding())
+        else:
+            return self.data
