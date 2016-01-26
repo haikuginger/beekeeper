@@ -4,7 +4,7 @@ class MissingHive(Exception):
         self.location = location
 
     def __str__(self):
-        return "Could not open hive at {}".format(location)
+        return "Could not open hive at {}".format(self.location)
 
 class VersionNotInHive(Exception):
 
