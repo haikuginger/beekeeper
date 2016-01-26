@@ -86,7 +86,7 @@ class Request(object):
             else:
                 return Response(self.action, request(**self.output)).read()
         except HTTPError as e:
-            raise ResponseException(e)
+            raise ResponseException(self.action, e)
 
     def set(self, variable):
         """
@@ -148,7 +148,7 @@ class Response(object):
 
     def __init__(self, action, response):
         self.action = action
-        self.headers = response.getheaders()
+        self.headers = response.headers
         self.data = response.read()
         self.code = response.getcode()
         self.message = response.msg
@@ -187,13 +187,13 @@ class Response(object):
             return self.headers.get('Set-Cookie').split('; ')
         return []
 
-    def read(self, decode=True):
+    def read(self, raw=False):
         """
         Parse the body of the response using the Content-Type
         header we pulled from the response, or the hive-defined
         format, if such couldn't be pulled automatically.
         """
-        if decode:
+        if not raw:
             return decode(self.data, self.mimetype(), encoding=self.encoding())
         else:
             return self.data
