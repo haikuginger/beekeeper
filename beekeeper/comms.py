@@ -8,10 +8,12 @@ from __future__ import unicode_literals, print_function
 try:
     from urllib2 import Request as PythonRequest, urlopen, HTTPError
     from urllib import urlencode
+    import httplib
 except ImportError:
     from urllib.request import Request as PythonRequest, urlopen
     from urllib.error import HTTPError
     from urllib.parse import urlencode
+    import http.client as httplib
 
 import json
 
@@ -27,6 +29,7 @@ def download_as_json(url):
         return Response('application/json', request(url=url)).read()
     except HTTPError as e:
         raise ResponseException('application/json', e)
+
 def request(*args, **kwargs):
     """
     Make a request with the received arguments and return an
@@ -68,10 +71,11 @@ class Request(object):
         """
         Send the request defined by the data stored in the object.
         """
-        try:
-            x = Response(self.action.format(), request(**self.output))
-        except HTTPError as e:
-            raise ResponseException(self.action.format(), e)
+        with VerboseContextManager(verbose=self.verbose):
+            try:
+                x = Response(self.action.format(), request(**self.output))
+            except HTTPError as e:
+                raise ResponseException(self.action.format(), e)
         if self.verbose:
             return x
         else:
@@ -135,8 +139,8 @@ class Response(object):
     we get back from the API provider's server
     """
 
-    def __init__(self, raw_format, response):
-        self.raw_format = raw_format
+    def __init__(self, static_format, response):
+        self.static_format = static_format
         self.headers = response.headers
         self.data = response.read()
         self.code = response.getcode()
@@ -150,7 +154,7 @@ class Response(object):
         """
         if ';' in self.headers.get('Content-Type', ''):
             return self.headers['Content-Type'].split(';')[0]
-        return self.headers.get('Content-Type', self.raw_format)
+        return self.headers.get('Content-Type', self.static_format)
 
     def encoding(self):
         """
@@ -209,8 +213,20 @@ def traverse(obj, *path, **kwargs):
 
 class ResponseException(Response, Exception):
 
-    def __init__(self, action, response):
-        Response.__init__(self, action, response)
+    def __init__(self, static_format, response):
+        Response.__init__(self, static_format, response)
 
     def __str__(self):
         return 'Error message: {}/{}'.format(self.code, self.message)
+
+class VerboseContextManager(object):
+
+    def __init__(self, verbose=False):
+        self.verbose = verbose
+
+    def __enter__(self):
+        if self.verbose:
+            httplib.HTTPConnection.set_debuglevel(1)
+
+    def __exit__(self, *args, **kwargs):
+        httplib.HTTPConnection.set_debuglevel(0)
