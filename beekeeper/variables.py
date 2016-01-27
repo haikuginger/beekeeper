@@ -108,9 +108,7 @@ class Variables(dict):
         self.replacements = partial(self.vals, 'url_replacement')
 
     def required_names(self):
-        for name, var in self.items():
-            if not var.get('optional', False):
-                yield name
+        return self.missing_vars()
 
     def optional_names(self):
         for name, var in self.items():
