@@ -71,7 +71,7 @@ class Request(object):
         try:
             x = Response(self.action.format(), request(**self.output))
         except HTTPError as e:
-            raise ResponseException(self.format(), e)
+            raise ResponseException(self.action.format(), e)
         if self.verbose:
             return x
         else:
