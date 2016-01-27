@@ -242,6 +242,15 @@ class API(object):
         version = kwargs.pop('version', None)
         return cls(Hive.from_url(url, version), *args, **kwargs)
 
+    @classmethod
+    def from_domain(cls, domain, suppress=False, *args, **kwargs):
+        """
+        Try to download the hive file from the domain using the defined
+        beekeeper spec of domain/api/hive.json.
+        """
+        version = kwargs.pop('version', None)
+        return cls(Hive.from_domain(domain, suppress, version), *args, **kwargs)
+
     def __repr__(self):
         out = ''
         req_var = self.variables().required_namestring()

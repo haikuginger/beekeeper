@@ -6,20 +6,28 @@ from __future__ import absolute_import, division
 from __future__ import unicode_literals, print_function
 
 try:
-    from urllib2 import Request as PythonRequest, urlopen, HTTPError
+    from urllib2 import Request as PythonRequest, HTTPError
+    from urllib2 import build_opener, HTTPCookieProcessor
     from urllib import urlencode
     import httplib
+    import cookielib
+
 except ImportError:
-    from urllib.request import Request as PythonRequest, urlopen
+    from urllib.request import Request as PythonRequest, build_opener
+    from urllib.request import HTTPCookieProcessor
     from urllib.error import HTTPError
     from urllib.parse import urlencode
     import http.client as httplib
+    import http.cookiejar as cookielib
 
 import json
 
 from beekeeper.variable_handlers import render
 from beekeeper.data_handlers import decode
 from beekeeper.exceptions import TraversalError
+
+cj = cookielib.CookieJar()
+request_opener = build_opener(HTTPCookieProcessor(cj))
 
 def download_as_json(url):
     """
@@ -36,7 +44,7 @@ def request(*args, **kwargs):
     HTTPResponse object
     """
     req = PythonRequest(*args, **kwargs)
-    return urlopen(req)
+    return request_opener.open(req)
 
 class Request(object):
 
@@ -226,7 +234,7 @@ class VerboseContextManager(object):
 
     def __enter__(self):
         if self.verbose:
-            httplib.HTTPConnection.set_debuglevel(1)
+            httplib.HTTPConnection.debuglevel = 1
 
     def __exit__(self, *args, **kwargs):
-        httplib.HTTPConnection.set_debuglevel(0)
+        httplib.HTTPConnection.debuglevel = 0

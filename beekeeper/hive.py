@@ -5,11 +5,17 @@ retrieved and opened from a local file
 from __future__ import absolute_import, division
 from __future__ import unicode_literals, print_function
 
+try:
+    from urllib2 import URLError
+except ImportError:
+    from urllib.error import URLError
+
 import json
 import os
 
 from beekeeper.comms import download_as_json, ResponseException
 from beekeeper.exceptions import MissingHive, VersionNotInHive
+from beekeeper.exceptions import HiveLoadedOverHTTP
 
 class Hive(dict):
 
@@ -33,7 +39,7 @@ class Hive(dict):
             raise MissingHive(fname)
 
     @classmethod
-    def from_url(cls, url, version=None):
+    def from_url(cls, url, version=None, ensure_security=False):
         """
         Create a Hive object based on JSON located at a remote URL.
         """
@@ -41,6 +47,18 @@ class Hive(dict):
             return cls(**download_as_json(url)).from_version(version)
         except ResponseException:
             raise MissingHive(url)
+
+    @classmethod
+    def from_domain(cls, domain, suppress=False, version=None):
+        url = 'https://' + domain + '/api/hive.json'
+        try:
+            return cls.from_url(url, version=version)
+        except (MissingHive, URLError):
+            url = 'http://' + domain + '/api/hive.json'
+            if not suppress:
+                raise HiveLoadedOverHTTP(url, cls.from_url(url))
+            else:
+                return cls.from_url(url)
 
     def from_version(self, version):
         """

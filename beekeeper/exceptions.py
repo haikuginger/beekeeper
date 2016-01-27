@@ -47,3 +47,14 @@ class stwrapper(str):
 
     def __repr__(self):
         return self
+
+class HiveLoadedOverHTTP(Exception):
+
+    def __init__(self, url, hive):
+        self.url = url
+        self.hive = hive
+
+    def __str__(self):
+        val = 'Hive was fetched insecurely over HTTP from URL {}'
+        val = val.format(self.url)
+        return val
