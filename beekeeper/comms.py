@@ -233,8 +233,9 @@ class VerboseContextManager(object):
         self.verbose = verbose
 
     def __enter__(self):
+        self.previous_state = httplib.HTTPConnection.debuglevel
         if self.verbose:
             httplib.HTTPConnection.debuglevel = 1
 
     def __exit__(self, *args, **kwargs):
-        httplib.HTTPConnection.debuglevel = 0
+        httplib.HTTPConnection.debuglevel = self.previous_state
