@@ -183,7 +183,7 @@ class Action(object):
         """
         _verbose = kwargs.pop('_verbose', False)
         variables = self.variables().fill(*args, **kwargs)
-        return Request(self, variables, traversal = self.traversal, _verbose=_verbose).send()
+        return Request(self, variables, traversal=self.traversal, _verbose=_verbose).send()
 
     def format(self):
         """

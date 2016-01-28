@@ -25,14 +25,14 @@ class TraversalError(Exception):
 
     def top_level(self):
         output = {}
-        if type(self.obj) is dict:
+        if isinstance(self.obj, dict):
             for name, item in self.obj.items():
-                if type(item) is dict:
+                if isinstance(item, dict):
                     if item:
                         output[name] = stwrapper('{...}')
                     else:
                         output[name] = stwrapper('{}')
-                elif type(item) is list:
+                elif isinstance(item, list):
                     if item:
                         output[name] = stwrapper('[...]')
                     else:

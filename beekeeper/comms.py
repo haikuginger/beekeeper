@@ -20,8 +20,6 @@ except ImportError:
     import http.client as httplib
     import http.cookiejar as cookielib
 
-import json
-
 from beekeeper.variable_handlers import render
 from beekeeper.data_handlers import decode
 from beekeeper.exceptions import TraversalError
@@ -198,10 +196,10 @@ class Response(object):
 
 def traverse(obj, *path, **kwargs):
     if path:
-        if type(obj) is list:
+        if isinstance(obj, list):
             return [traverse(x, *path) for x in obj]
-        elif type(obj) is dict:
-            if type(path[0]) is list:
+        elif isinstance(obj, dict):
+            if isinstance(path[0], list):
                 return {name: traverse(obj[name], *path[1:], split=True) for name in path[0]}
             elif type(path[0]) is not str:
                 raise TraversalError(obj, path[0])
