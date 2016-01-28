@@ -24,8 +24,13 @@ from beekeeper.variable_handlers import render
 from beekeeper.data_handlers import decode
 from beekeeper.exceptions import TraversalError
 
-cj = cookielib.CookieJar()
-request_opener = build_opener(HTTPCookieProcessor(cj))
+try:
+    basestring
+except NameError:
+    basestring = str
+
+COOKIE_JAR = cookielib.CookieJar()
+REQUEST_OPENER = build_opener(HTTPCookieProcessor(COOKIE_JAR))
 
 def download_as_json(url):
     """
@@ -42,7 +47,7 @@ def request(*args, **kwargs):
     HTTPResponse object
     """
     req = PythonRequest(*args, **kwargs)
-    return request_opener.open(req)
+    return REQUEST_OPENER.open(req)
 
 class Request(object):
 
@@ -229,9 +234,9 @@ class VerboseContextManager(object):
 
     def __init__(self, verbose=False):
         self.verbose = verbose
+        self.previous_state = httplib.HTTPConnection.debuglevel
 
     def __enter__(self):
-        self.previous_state = httplib.HTTPConnection.debuglevel
         if self.verbose:
             httplib.HTTPConnection.debuglevel = 1
 
