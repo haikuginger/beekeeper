@@ -108,17 +108,31 @@ class Variables(dict):
         self.replacements = partial(self.vals, 'url_replacement')
 
     def required_names(self):
+        """
+        Get a list of the variables that we still need to fill in
+        """
         return self.missing_vars()
 
     def optional_names(self):
+        """
+        Get a list of the variables that are defined, but not required
+        """
         for name, var in self.items():
             if var.get('optional', False):
                 yield name
 
     def required_namestring(self):
+        """
+        Compose a string showing the required variables (helper for the
+        API printing function)
+        """
         return ', '.join(self.required_names())
 
     def optional_namestring(self):
+        """
+        Compose a string showing the optional variables (helper for the
+        API printing function)
+        """
         opt_names = list(self.optional_names())
         if opt_names:
             return '[, {}]'.format(', '.join(opt_names))

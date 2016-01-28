@@ -98,6 +98,9 @@ class APIObject(object):
         setattr(self, name, self._actions[name].execute)
 
     def printed_out(self, name):
+        """
+        Create a string describing the APIObject and its children
+        """
         out = ''
         out += '|\n'
         if self._id_variable:
@@ -112,6 +115,9 @@ class APIObject(object):
         return out
 
     def id_variable(self):
+        """
+        Get the name of the variable that this particular APIObject can be subscripted by
+        """
         return self._id_variable
 
 class APIObjectInstance(object):
@@ -196,6 +202,9 @@ class Action(object):
             return self.endpoint.format()
 
     def printed_out(self, name):
+        """
+        Create a string representation of the action
+        """
         opt = self.variables().optional_namestring()
         req = self.variables().required_namestring()
         out = ''

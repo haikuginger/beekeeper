@@ -1,3 +1,7 @@
+"""
+This module holds most of the exceptions we use on a day-to-day basis. Woo.
+"""
+
 class MissingHive(Exception):
     """
     The error we raise if we tried to find a hive at a given location

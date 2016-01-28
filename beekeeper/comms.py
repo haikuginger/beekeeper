@@ -38,8 +38,8 @@ def download_as_json(url):
     """
     try:
         return Response('application/json', request(url=url)).read()
-    except HTTPError as e:
-        raise ResponseException('application/json', e)
+    except HTTPError as err:
+        raise ResponseException('application/json', err)
 
 def request(*args, **kwargs):
     """
@@ -84,13 +84,13 @@ class Request(object):
         """
         with VerboseContextManager(verbose=self.verbose):
             try:
-                x = Response(self.action.format(), request(**self.output))
-            except HTTPError as e:
-                raise ResponseException(self.action.format(), e)
+                resp = Response(self.action.format(), request(**self.output))
+            except HTTPError as err:
+                raise ResponseException(self.action.format(), err)
         if self.verbose:
-            return x
+            return resp
         else:
-            return x.read(traversal=self.traversal)
+            return resp.read(traversal=self.traversal)
 
     def set(self, variable):
         """
@@ -200,29 +200,68 @@ class Response(object):
             return self.data
 
 def traverse(obj, *path, **kwargs):
+    """
+    Traverse the object we receive with the given path. Path
+    items can be either strings or lists of strings (or any
+    nested combination thereof). Behavior in given cases is
+    laid out line by line below.
+    """
     if path:
         if isinstance(obj, list):
+            #If the current state of the object received is a
+            #list, return a list of each of its children elements,
+            #traversed with the current state of the string
             return [traverse(x, *path) for x in obj]
         elif isinstance(obj, dict):
+            #If the current state of the object received is a
+            #dictionary, do the following...
             if isinstance(path[0], list):
+                #If the current top item in the path is a list,
+                #return a dictionary with keys to each of the
+                #items in the list, each traversed recursively.
                 return {name: traverse(obj[name], *path[1:], split=True) for name in path[0]}
             elif not isinstance(path[0], basestring):
+                #If the key isn't a string (or a list; handled
+                #previously), raise an exception.
                 raise TraversalError(obj, path[0])
             elif path[0] == '*':
-                return {name: traverse(item, *path[1:]) for name, item in obj.items()}
+                #If the key is a wildcard, return a dict containing
+                #each item, traversed down recursively.
+                return {name: traverse(item, *path[1:], split=True) for name, item in obj.items()}
             elif path[0] in obj:
+                #The individual key is in the current object;
+                #traverse it and return the result.
                 return traverse(obj[path[0]], *path[1:])
             else:
+                #The individual key doesn't exist in the
+                #current object; raise an error
                 raise TraversalError(obj, path[0])
         else:
+            #If the current object isn't either a list or
+            #a dict, then do one of two things:
             if kwargs.get('split', False):
+                #If the previously-recursed operation caused
+                #a split in a dict, just return the object; it's
+                #been specifically called out, but it isn't
+                #possible to recurse further.
                 return obj
             else:
+                #The object can't be traversed, and we didn't
+                #specifically call it out to do something
+                #else with. Raise an exception.
                 raise TraversalError(obj, path[0])
     else:
+        #If there's no path left, then just return the
+        #object that we received.
         return obj
 
 class ResponseException(Response, Exception):
+    """
+    The exception we raise when we get an HTTPError back from
+    the remote server. It's here and not in beekeeper.exceptions
+    because it inherits from Response, and we need to avoid
+    circular dependencies.
+    """
 
     def __init__(self, static_format, response):
         Response.__init__(self, static_format, response)
@@ -231,6 +270,10 @@ class ResponseException(Response, Exception):
         return 'Error message: {}/{}'.format(self.code, self.message)
 
 class VerboseContextManager(object):
+    """
+    Sets httplib to verbose on __enter__; returns it to its
+    previous state on __exit__.
+    """
 
     def __init__(self, verbose=False):
         self.verbose = verbose

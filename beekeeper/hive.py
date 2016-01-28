@@ -39,7 +39,7 @@ class Hive(dict):
             raise MissingHive(fname)
 
     @classmethod
-    def from_url(cls, url, version=None, ensure_security=False):
+    def from_url(cls, url, version=None):
         """
         Create a Hive object based on JSON located at a remote URL.
         """
@@ -50,6 +50,10 @@ class Hive(dict):
 
     @classmethod
     def from_domain(cls, domain, suppress=False, version=None):
+        """
+        Try to find a hive for the given domain; raise an error if we have to
+        failover to HTTP and haven't explicitly suppressed it in the call.
+        """
         url = 'https://' + domain + '/api/hive.json'
         try:
             return cls.from_url(url, version=version)
