@@ -133,7 +133,8 @@ class Variables(dict):
         output = set()
         for _, var in self.items():
             for var_type in var.types():
-                output.add(var_type)
+                if self.vals(var_type):
+                    output.add(var_type)
         return list(output)
 
     def vals(self, var_type):
