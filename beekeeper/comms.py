@@ -201,7 +201,7 @@ def traverse(obj, *path, **kwargs):
         elif isinstance(obj, dict):
             if isinstance(path[0], list):
                 return {name: traverse(obj[name], *path[1:], split=True) for name in path[0]}
-            elif type(path[0]) is not str:
+            elif not isinstance(path[0], basestring):
                 raise TraversalError(obj, path[0])
             elif path[0] == '*':
                 return {name: traverse(item, *path[1:]) for name, item in obj.items()}
