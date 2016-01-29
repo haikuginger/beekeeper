@@ -9,7 +9,7 @@ setup(
     packages = ['beekeeper'],
     author = "Jesse Shapiro",
     author_email = "jesse@bedrockdata.com",
-    long_description = readme
+    long_description = readme,
     keywords = "REST API web client wrapper",
     url = "https://github.com/haikuginger/beekeeper",
     classifiers = [
