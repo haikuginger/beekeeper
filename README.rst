@@ -1,9 +1,7 @@
-|Build Status|
+|Build Status| |Read Docs|
 
 beekeeper
 =========
-
-`Read the docs! <http://beekeeper.readthedocs.org/en/latest/index.html>`_
 
 Description
 -----------
@@ -97,3 +95,7 @@ on Python versions earlier than 2.7.9 or 3.4.3.
 
 .. |Build Status| image:: https://travis-ci.org/haikuginger/beekeeper.svg?branch=master
    :target: https://travis-ci.org/haikuginger/beekeeper
+
+.. |Read Docs| image:: https://readthedocs.org/projects/beekeeper/badge/?version=latest
+    :target: http://beekeeper.readthedocs.org/en/latest/?badge=latest
+    :alt: Documentation Status
