@@ -20,6 +20,30 @@ First, we'll need to import beekeeper and initialize the FooBar Ventures API:
     
     >>> fbv = API.from_domain('foobar.com')
 
+Note that if FooBar Ventures served their API over HTTP rather than over HTTPS,
+you'd need to set the "suppress" keyword argument to True to prevent beekeeper
+from raising an exception. Because hive files change the behavior of your
+application, secure transmission is really important. If you're possibly
+going to be passing sensitive information with your application, and the API
+provider doesn't host their hive using HTTP, it may be better for you to download
+their hive yourself, inspect it, include it with your application, and then
+initialize with a statement like this:
+
+.. code:: python
+
+    >>> fbv = API.from_hive_file(file_location)
+
+You can also host the hive yourself securely, and initialize like this:
+
+.. code:: python
+
+    >>> fbv = API.from_remote_hive('https://mydomain.tld/fbv_hive.json')
+
+During the initialization, if the API you're accessing requires any
+variables declared by the hive, you can pass those in as arguments or keyword
+arguments, and those values will be used on any future requests. This process
+is similar to what happens when executing a request - more on that later.
+
 Then, let's say we want to get a list of all the widgets that FooBar
 makes:
 
@@ -44,13 +68,13 @@ system, a HyperStar HS2000.
 
     {'manufacturers': {'Athena': {'CompatibleModels': ['AM4000', 'AM236', 'AM236b']}, 'HyperStar': {'CompatibleModels': ['HS133', 'HS450', 'HS3200', 'HS2000']}}}
 
-Yikes, that's a big response. I could probably parse through it, but maybe
-there's an easier way. You'll note something interesting about the request
-first, though; it has a dictionary-style subscription in the middle. This
-is because FooBar Ventures was kind enough, when they wrote their hive file,
-to define a ID variable for the Widget object. What this means is that if
-I know the ID for an object, I can easily get to that particular instance
-of an object, just by subscripting.
+Yikes, that's a big response. I could probably parse through it, but a), I'm
+kind of lazy, and b), maybe there's an easier way. You'll note something
+interesting about the request first, though; it has a dictionary-style subscription
+in the middle. This is because FooBar Ventures was kind enough, when they
+wrote their hive file, to define a ID variable for the Widget object.
+What this means is that if I know the ID for an object, I can easily get to
+that particular instance of an object, just by subscripting.
 
 To deal with the response? I mentioned I'm a bit lazy, so I took a quick
 look at the API documentation, and it looks like FooBar provides a method
@@ -89,7 +113,7 @@ GUYS, IT'S SUPER COOL. I MUST HAVE IT. I think I need 20 of them.
 
     >> gx280.order(20)
 
-    TypeError: Expected values for variables: ['cc_number']
+    TypeError: Expected values for variables: ['cc_number', 'quantity']
 
 Oh. I guess they want to be paid.
 
@@ -122,6 +146,26 @@ easily see the structure by just doing the following:
 .. code:: python
 
     >>> print(fbv)
+
+    FooBar Ventures()
+    |
+    |---Widgets[widget_id]
+    |   |   A widget, made by FooBar Ventures!
+    |   |
+    |   |---list()
+    |   |       Get a list of all widgets
+    |   |
+    |   |---compatibility_list(widget_id)
+    |   |       Get a list of systems compatible with the given widget
+    |   |
+    |   |---compatible_with(widget_id, system_id)
+    |   |       Is the system compatible with the widget?
+    |   |
+    |   |---description(widget_id)
+    |   |       Get a description of the widget
+    |   |
+    |   |---order(widget_id, cc_number, quantity)
+    |   |       Order the given quantity of the widget
 
 It'll give you a nice printout so you can see where you need to go, and what
 variable values you need to get there.
