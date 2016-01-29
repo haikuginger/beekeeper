@@ -176,15 +176,6 @@ class Response(object):
             return self.headers['Content-Type'].split('charset=')[1].split(';')[0]
         return 'utf-8'
 
-    def cookies(self):
-        """
-        Get a list from the Set-Cookie header; if there's nothing
-        there, return an empty list.
-        """
-        if self.headers.get('Set-Cookie', False):
-            return self.headers.get('Set-Cookie').split('; ')
-        return []
-
     def read(self, raw=False, traversal=None):
         """
         Parse the body of the response using the Content-Type
@@ -219,6 +210,9 @@ def traverse(obj, *path, **kwargs):
                 #If the current top item in the path is a list,
                 #return a dictionary with keys to each of the
                 #items in the list, each traversed recursively.
+                for x in path[0]:
+                    if not isinstance(x, basestring):
+                        raise TraversalError(obj, path[0])
                 return {name: traverse(obj[name], *path[1:], split=True) for name in path[0]}
             elif not isinstance(path[0], basestring):
                 #If the key isn't a string (or a list; handled

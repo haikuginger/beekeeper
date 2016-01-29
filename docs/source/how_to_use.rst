@@ -70,7 +70,7 @@ own variable:
 
 .. code:: python
 
-    >>> widget = fbv.Widgets['GX280']
+    >>> gx280 = fbv.Widgets['GX280']
 
 Note that this isn't downloading any data; it's just binding all the actions
 that are associated with that particular object, and all the variables
@@ -79,7 +79,7 @@ can then use any actions as if I had typed out the whole long thing.
 
 .. code:: python
 
-    >>> widget.description()
+    >>> gx280.description()
 
     {'widgetModel': 'GX280', 'description': 'It's super cool!'}
 
@@ -87,9 +87,9 @@ GUYS, IT'S SUPER COOL. I MUST HAVE IT. I think I need 20 of them.
 
 .. code:: python
 
-    >> widget.order(20)
+    >> gx280.order(20)
 
-    TypeError: Missing settings: ['cc_number']
+    TypeError: Expected values for variables: ['cc_number']
 
 Oh. I guess they want to be paid.
 
@@ -100,7 +100,7 @@ to fill that in. Let's try again:
 
 .. code:: python
 
-    >>> widget.order(quantity=20, cc_number=1234234534564567)
+    >>> gx280.order(quantity=20, cc_number=1234234534564567)
 
     {'status': 'OrderCreated', 'OrderNumber': 5960283}
 
@@ -123,4 +123,5 @@ easily see the structure by just doing the following:
 
     >>> print(fbv)
 
-It'll give you a nice printout so you can see where you need to go.
+It'll give you a nice printout so you can see where you need to go, and what
+variable values you need to get there.

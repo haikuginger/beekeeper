@@ -197,7 +197,7 @@ class Variables(dict):
         full, but ISN'T.
         """
         if self.missing_vars():
-            raise TypeError('Missing settings: {}'.format(self.missing_vars()))
+            raise TypeError('Expected values for variables: {}'.format(self.missing_vars()))
 
     def fill(self, *args, **kwargs):
         """
