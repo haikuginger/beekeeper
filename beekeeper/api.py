@@ -98,6 +98,9 @@ class APIObject(object):
         setattr(self, name, self._actions[name].execute)
 
     def printed_out(self, name):
+        """
+        Create a string describing the APIObject and its children
+        """
         out = ''
         out += '|\n'
         if self._id_variable:
@@ -112,6 +115,9 @@ class APIObject(object):
         return out
 
     def id_variable(self):
+        """
+        Get the name of the variable that this particular APIObject can be subscripted by
+        """
         return self._id_variable
 
 class APIObjectInstance(object):
@@ -166,6 +172,7 @@ class Action(object):
         self.mimetype = kwargs.get('mimetype', None)
         self.url = endpoint.url
         self.description = kwargs.get('description', None)
+        self.traversal = kwargs.get('traverse', None)
 
     def variables(self):
         """
@@ -178,24 +185,26 @@ class Action(object):
         """
         Fill all variables from *args and **kwargs, build the request,
         and send it. If we set the _verbose kwarg to true, then we'll
-        get a Response object back instead of loaded data, and we'll also
-        print the information that we're sending to the server.
+        get a Response object back instead of loaded data.
         """
         _verbose = kwargs.pop('_verbose', False)
         variables = self.variables().fill(*args, **kwargs)
-        return Request(self, variables, verbose=_verbose).send()
+        return Request(self, variables, traversal=self.traversal, _verbose=_verbose).send()
 
-    def format(self, direction='both'):
+    def format(self):
         """
         Get the local directional MIME type; if it doesn't exist, defer
         to the Endpoint-level MIME type.
         """
-        if self.mimetype and direction in self.mimetype:
-            return self.mimetype[direction]
+        if self.mimetype:
+            return self.mimetype
         else:
             return self.endpoint.format()
 
     def printed_out(self, name):
+        """
+        Create a string representation of the action
+        """
         opt = self.variables().optional_namestring()
         req = self.variables().required_namestring()
         out = ''
@@ -241,6 +250,15 @@ class API(object):
         """
         version = kwargs.pop('version', None)
         return cls(Hive.from_url(url, version), *args, **kwargs)
+
+    @classmethod
+    def from_domain(cls, domain, suppress=False, *args, **kwargs):
+        """
+        Try to download the hive file from the domain using the defined
+        beekeeper spec of domain/api/hive.json.
+        """
+        version = kwargs.pop('version', None)
+        return cls(Hive.from_domain(domain, suppress, version), *args, **kwargs)
 
     def __repr__(self):
         out = ''

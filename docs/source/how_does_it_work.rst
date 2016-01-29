@@ -22,7 +22,6 @@ The variable types that beekeeper currently supports are found below:
 -   HTTP bearer authentication
 -   Multipart/form-data
 -   Cookies
-    -   No automatic handling yet, but can be manually defined
 
 Data
 ----
@@ -45,6 +44,31 @@ Right now, the MIME types that beekeeper has support for are as follows:
 -   text/plain
 -   text/html
 
+Note that any response can be handled in a GZipped format as well; like the
+above formats, this encoding is handled automatically by beekeeper.
+
+Hive Location
+-------------
+
+To be automatically acquired by beekeeper when a developer passes your
+domain name (for example, facebook.com) to initialize it, your hive file
+must be located as below:
+
+.. code ::
+
+    https://facebook.com/api/hive.json
+
+It is STRONGLY recommended that you server your hive over HTTPS, as it does
+change the behavior of client applications. If you serve your hive over HTTP
+at this location, then, by default, beekeeper will raise an exception. This
+can be suppressed or handled, but it is not ideal.
+
+You can make your hive accessible on any domain you control; it may be easier
+to just set up redirects for other domains, though.
+
+Note that subdomains do count as separate domains, so "en.wikipedia.org" would
+have its own hive, separate from "wikipedia.org".
+
 Parts of a Hive
 ---------------
 
@@ -66,14 +90,14 @@ not a permanent promise in all cases.
 name
 ~~~~
 
-The name of the hive. This isn't currently in use, but it may be used in
-future; for example, if a hive file contains multiple, independently
-addressable API descriptions.
+The name of the hive. This is used when printing an API for documentation
+purposes.
 
 description
 ~~~~~~~~~~~
 
-Self-explanatory. Like the name key, it's not currently used functionally.
+Self-explanatory. Like the name key, it's only used when printing out an
+API, and is optional.
 
 root
 ~~~~
@@ -96,6 +120,22 @@ server response. It defaults to "application/json".
 versioning
 ~~~~~~~~~~
 
+Example
+^^^^^^^
+
+.. code:: json
+
+    {
+        "versioning" : {
+            "version": 8,
+            "previousVersions": [
+                "version": 7,
+                "location": "http://domain.tld/api/hive_v7.json",
+                "expires": "2016-12-31T12:00:00Z"
+            ]
+        }
+    }
+
 The versioning key is completely optional. If you have multiple versions
 of your API, or if you iterate your API quickly, then it's good to note the
 current version of the API in the "version" subkey, and the details of any
@@ -113,22 +153,6 @@ If a beekeeper API object is constructed with a version argument, beekeeper
 will automatically try to fetch the API version described by parsing the
 hive file it receives, determining if it matches the version given, and
 if not, loading from the appropriate URL, when available.
-
-Example
-^^^^^^^
-
-.. code:: json
-
-    {
-        "versioning" : {
-            "version": 8,
-            "previousVersions": [
-                "version": 7,
-                "location": "http://domain.tld/api/hive_v7.json",
-                "expires": "2016-12-31T12:00:00Z"
-            ]
-        }
-    }
 
 variables
 ~~~~~~~~~
@@ -169,11 +193,13 @@ variables that might be used. Some of them will have special caveats, noted belo
 -   **multipart**
     Handles parsing any number of variables into a multipart/form-data request.
 -   **cookie**
-    Sends a cookie to the server. Note that, despite usage to the contrary, cookies
-    are plain strings, and not key/value pairs, so in general, the name of the
-    cookie will be disregarded, and only the string value will be sent. Plan ahead,
-    and if your cookies are the (nonstandard but widely used) key=value type, set a
-    string containing that entire package as the value.
+    Sends a cookie to the server. By default, beekeeper will use cookies within a
+    session automatically; it'll pull them from server responses, and send them back
+    when needed, without additional definition. Explicitly defining a cookie (which
+    is a single string; if you've got a cookie that's a name-pair value, you'll just
+    need to pass in "name=value" as the string value) will disable any automatic
+    cookie handling for that request and will only send those cookies that are
+    explicitly defined.
 -   **http_form**
     Sends the key/value pair as part of an application/x-www-form-urlencoded request
     body to the server.
@@ -219,8 +245,9 @@ remain filled throughout the session.
 When calling a remote method, variable values are not stored, and are only used in
 that specific request.
 
-Values are determined by the lowest-level copy of a variable to have a value explicitly
-set. A higher-level value may be "un-set" by passing a None value during execution of
+Values are determined by the most specifc copy of a variable to have a value explicitly
+set. From least-specific to most-specific, the levels are API, endpoint, and then action.
+A higher-level value may be "un-set" by passing a None value during execution of
 a request (after loading the hive into beekeeper) or by setting a lower-level "null"
 value within the hive (when writing the JSON file).
 
@@ -296,7 +323,11 @@ they're not used on a user-facing level. However, they should still have fairly
 descriptive names, so that a developer reading your hive file can quickly determine
 what's happening.
 
-Each Endpoint object contains three primary keys:
+Each Endpoint object contains four primary keys:
+
+description
+^^^^^^^^^^^
+This is an optional key that's only used when printing out an API.
 
 path
 ^^^^
@@ -372,8 +403,7 @@ As with all objects described so far, any given object will have several keys:
 description
 ^^^^^^^^^^^
 
-As with the API, the description key is nonfunctional, but can be useful when
-reading the hive file.
+This optional key is only used when printing out the API.
 
 id_variable
 ^^^^^^^^^^^
@@ -407,6 +437,11 @@ ID variable I provide this method associated with?"
 For fear of repeating myself, as with everything so far, each action has
 several subkeys:
 
+description
++++++++++++
+
+This optional key is only used when printing out the API.
+
 endpoint
 ++++++++
 
@@ -429,6 +464,43 @@ different purposes. For example, if your Action accesses an endpoint that
 needs to have variables filled in to make it fit for a particular object,
 the best place to do it is here. You may also need to set other parameters
 that are specific to the given action.
+
+traverse
+++++++++
+
+The Traverse key here lets you define, on a particular action, which parts
+of the response data should actually be provided to the program. In some
+specific cases, it may be useful to pare down the response to specific
+components.
+
+The Traverse key is a list; each item in that list can be either a string or
+a list of strings. We start out with the return data in dictionary form, and
+proceed recursively through the traversal path. For each item in the path,
+we'll do one of several things:
+
+-   If the object we've currently recursed to is a list, we'll return a list
+    of each item, each traversed with the remaining elements of the path.
+
+-   If the top item in the path is a list, we'll return a dictionary, with
+    one key for each item in the list. The value of each key in the dictionary
+    will be the traversed value of the item for that key in the object that
+    we're currently recursed to.
+
+-   If the top item in the path is a string with value "*", we'll act similarly
+    to what we would do if the top item in the path was a list, but instead of
+    looking at just specific keys, we'll return every key in the current object.
+
+-   If the top item in the path is any other string, we'll continue recursively
+    navigating through the dictionary entry with that particular key.
+
+In general, if we reach a node where it isn't possible to navigate to the next
+path item, we'll raise a TraversalError that contains information about the current
+path item as well as the state of the object that we've traversed to. The exception
+is if the previous operation was to split a dictionary (as in the case with a
+list-type path item, or with a wildcard "*" path item). In this case, if, one of
+the objects addressed in such a split is not a normally traversable object (a type
+that inherits from either a dictionary or a list), then we'll just return that
+object, rather than raising a further exception.
 
 Example
 ^^^^^^^
@@ -469,6 +541,20 @@ Example
                             "value": "widget"
                         }
                     }
+                },
+                "list": {
+                    "endpoint": "ListObjectInstances",
+                    "method": "GET",
+                    "variables": {
+                        "object_type": {
+                            "value": "widget"
+                        }
+                    },
+                    "traverse": [
+                        "data",
+                        "results",
+                        "widgets"
+                    ]
                 }
             }
         }

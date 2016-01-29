@@ -30,7 +30,7 @@
         }
     },
     "objects": {
-        "Contact": {
+        "Contacts": {
             "description": "An entity representing a single person",
             "id_variable": "contact_id",
             "actions": {
@@ -49,7 +49,12 @@
                     }
                 },
                 "get": {
-                    "endpoint": "SingleContact"
+                    "endpoint": "SingleContact",
+                    "traverse": [
+                        "properties",
+                        "*",
+                        "value"
+                    ]
                 }
             }
         }

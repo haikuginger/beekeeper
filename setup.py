@@ -5,7 +5,7 @@ with open('README.rst', 'r') as readme:
 
 setup(
     name = "beekeeper",
-    version = "0.6.1",
+    version = "0.7",
     packages = ['beekeeper'],
     author = "Jesse Shapiro",
     author_email = "jesse@bedrockdata.com",

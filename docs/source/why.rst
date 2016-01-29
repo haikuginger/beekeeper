@@ -35,21 +35,19 @@ Simplification
 The use of idempotent operations (the same action should have the same
 result) and of context wholly contained within the request significantly
 simplifies serverside programming. Rather than maintaining a table full
-of active session information for its clients, a server only needs to
-maintain its internal state, and then know how to map particular
-requests to the relevant return data based on the variables it receives.
+of active session information for its clients, a server needs only to listen
+for requests, and map them to the relevant data based on the query received.
 For example, a server that receives a "GET" request at the "Widgets"
 endpoint, with an ID parameter of 123 can simply know that it should
 query the Widgets table of its database and return the entry with an
 internal ID of 123.
 
 This also simplifies things for the client. Rather than having to
-maintain an idea about "where" in the application it is, it creates an
-entirely new session with every request, and each request is not affected
-by any other request, except insofar as the other request might change
-the global state of the application. When using a REST API, the application
-can be confident that, in general, requests don't need to be performed
-in any particular order.
+maintain an idea about "where" in the application it is, it can simply
+perform requests for particular pieces of information as needed, with
+the understanding that there won't be any undue side effects. When using
+a REST API, the application can be confident that, in general, requests
+don't need to be performed in any particular order.
 
 Complication
 ------------
@@ -59,7 +57,7 @@ still some missing pieces. RESTful requests are made over HTTP; we know
 that. However, there are any number of different ways to do that, and
 almost every single one has been used by some API, in some form or
 another. And, what's worse, HATEOAS has not been widely implemented,
-although it would have solved many of these difficulties.
+even though it would have solved many of these difficulties.
 
 As a result, when working with RESTful APIs, developers have to spend
 significant periods of time interpreting exactly what the request for a
@@ -79,7 +77,7 @@ Existing Solutions
 
 There are some solutions today that aim to make working with REST APIs
 simpler and easier. The largest of these in Python is the "Requests"
-library. Requests aims to simplify making RESTful requests by condensing
+library. Requests aims to simplify RESTful requests by condensing
 commonly-used resources into a single library, and stitching them together
 so that they can be used within a single line of code. For example:
 
@@ -89,14 +87,14 @@ so that they can be used within a single line of code. For example:
 
 The above code succinctly describes exactly what the developer wants
 to do - and then does it. It uses the HTTP GET method at the web address
-"domain.told/api/resource", takes the response, and parses it from the
-JSON format into a native-Python dictionary. Requests also provides other
-useful features, like cookie persistence across a session, and automatic
-handling of URL parameters and headers.
+"domain.tld/api/resource", takes the response, and parses it from a string in
+JSON format into a native Python dictionary. Requests also provides other
+useful features, such as cookie persistence and automatic handling of URL
+parameters and headers.
 
-However, it doesn't actually deal with any of the fundamental problems
+However, Requests doesn't actually deal with any of the fundamental problems
 that are at play in modern REST APIs. Does it make it easier to work
-within the constraints of the existing system? Sure. But because the
+within the constraints of the existing system? Sure – but because the
 Requests library is as fundamentally stateless as the APIs it's interacting
 with, it has no way of eliminating them entirely. A variable that's
 defined as being passed in a URL parameter must be passed to Requests
@@ -106,9 +104,9 @@ The Problem Remains
 -------------------
 
 What's more, many modern REST APIs don't do a good job of descriptively
-converting their internal state's object hierarchy into a set of resource
-URLs that can be accessed programmatically. This is best exemplified
-by Wikipedia, whose REST API has but a single endpoint, which accesses
+converting their internal state hierarchy into a set of resource
+URIs that can be accessed programmatically. This is best exemplified
+by Wikipedia, whose REST API has but a single endpoint which accesses
 any resource according to the parameters passed to it:
 
 .. code::
@@ -136,7 +134,9 @@ useful or memorable. The Requests method isn't much better:
 This situation is made worse by the fact that a URL parameter is only
 one type of variable. A given API might not only require the developer
 to remember (or memorialize in code) that several different variables
-exist, but also which of five or more variable types each is.
+exist, but also which of five or more variable types each is, some of which
+might be handled by Requests natively, but some others of which nmight
+take some manual labor to get working.
 
 In Summary
 ----------

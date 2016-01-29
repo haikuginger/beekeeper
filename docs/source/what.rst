@@ -4,8 +4,8 @@ What?
 Recap: The problem is state
 ---------------------------
 
-So, the problem with existing solutions isn't that there's something
-that's fundamentally wrong with them from a technical perspective.
+The problem with existing solutions isn't that there's something
+fundamentally wrong with them from a technical perspective.
 They do exactly what they're designed to do, and they do it extremely
 well. No one is saying that Requests isn't an excellent HTTP client,
 or that its .json() parsing method isn't excruciatingly convenient.
@@ -57,7 +57,7 @@ of help, and a bit of luck, that won't always be the case. The long-term
 goal is for beekeeper to become so popular that API providers will
 write their own hive files and host them on their own websites. In
 the not-too-distant future, initializing an API interface with beekeeper
-will be as simple as this:
+could be as simple as this:
 
 .. code:: python
 
