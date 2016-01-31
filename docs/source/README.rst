@@ -1,6 +1,5 @@
 Readme
 ======
-|Build Status| |Read Docs|
 
 Description
 -----------
@@ -91,10 +90,3 @@ Notes
 
 beekeeper does not currently do SSL certificate verification when used
 on Python versions earlier than 2.7.9 or 3.4.3.
-
-.. |Build Status| image:: https://travis-ci.org/haikuginger/beekeeper.svg?branch=master
-   :target: https://travis-ci.org/haikuginger/beekeeper
-
-.. |Read Docs| image:: https://readthedocs.org/projects/beekeeper/badge/?version=latest
-    :target: http://beekeeper.readthedocs.org/en/latest/?badge=latest
-    :alt: Documentation Status
