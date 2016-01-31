@@ -1,5 +1,5 @@
 beekeeper |Build Status| |Read Docs|
-=========
+====================================
 
 Description
 -----------
