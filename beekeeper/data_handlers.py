@@ -67,7 +67,7 @@ MIMETYPES = {
 }
 
 def code(action, data, mimetype, encoding='utf-8'):
-    if hasattr(data, 'read'):
+    if action == 'dump' and hasattr(data, 'read'):
         data = data.read()
     if action == 'dump' and isinstance(data, bytes):
         return getattr(Binary, action)(data, encoding)
