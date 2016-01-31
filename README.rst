@@ -1,6 +1,4 @@
-|Build Status| |Read Docs|
-
-beekeeper
+beekeeper |Build Status| |Read Docs|
 =========
 
 Description

@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 with open('README.rst', 'r') as readme:
-    readme = readme.read()
+    readme = readme.read().replace('=latest', '=stable')
 
 setup(
     name = "beekeeper",
