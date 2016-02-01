@@ -47,7 +47,7 @@ def basic_auth(**values):
     password = values.get('password', {}).get('value', '')
     authinfo = b64encode("{}:{}".format(username, password).encode('utf-8'))
     authinfo = 'Basic {}'.format(authinfo.decode('utf-8'))
-    return render('header', Authorization={"value": authinfo})
+    return render('header', Authorization={'value': authinfo})
 
 def bearer(**values):
     if len(values) > 1:

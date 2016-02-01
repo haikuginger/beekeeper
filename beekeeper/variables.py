@@ -38,6 +38,17 @@ class Variable(dict):
             kwargs['types'].append(kwargs.pop('type'))
         dict.__init__(self, **kwargs)
 
+    def __getitem__(self, key):
+        """
+        When we get a value out of a Variable object, it may be in
+        the form of a function. If so, we should evaluate that value
+        before passing it out to other application components.
+        """
+        val = dict.__getitem__(self, key)
+        if callable(val):
+            return val()
+        return val
+
     def is_filled(self):
         """
         Does the variable have a value, or is it optional?
@@ -94,7 +105,11 @@ class Variable(dict):
         """
         Get the value of the variable, if defined.
         """
-        return self.get('value', None)
+        val = self.get('value', None)
+        if callable(val):
+            return val()
+        else:
+            return val
 
 class Variables(dict):
 
