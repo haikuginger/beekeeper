@@ -7,6 +7,7 @@ from __future__ import unicode_literals, print_function
 
 from functools import partial
 from keyword import iskeyword
+from copy import deepcopy
 
 DEFAULT_VARIABLE_TYPE = 'url_param'
 
@@ -48,6 +49,24 @@ class Variable(dict):
         if callable(val):
             return val()
         return val
+
+    def __deepcopy__(self, memo):
+        """
+        When copying variables to a more-specific place, we might
+        have callable variable values. Rather than copying the method,
+        and losing its link to the state of the class it (might) exist
+        in, we'll execute it and copy down the result of the execution.
+        Because we generally will be doing the actual copying within a
+        few microseconds of the execution (happens on each .execute() call),
+        this should be fine.
+        """
+        newthing = Variable()
+        for name, value in self.items():
+            if callable(value):
+                newthing[name] = deepcopy(value())
+            else:
+                newthing[name] = deepcopy(value)
+        return newthing
 
     def is_filled(self):
         """
