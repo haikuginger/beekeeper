@@ -210,8 +210,8 @@ def traverse(obj, *path, **kwargs):
                 #If the current top item in the path is a list,
                 #return a dictionary with keys to each of the
                 #items in the list, each traversed recursively.
-                for x in path[0]:
-                    if not isinstance(x, basestring):
+                for branch in path[0]:
+                    if not isinstance(branch, basestring):
                         raise TraversalError(obj, path[0])
                 return {name: traverse(obj[name], *path[1:], split=True) for name in path[0]}
             elif not isinstance(path[0], basestring):

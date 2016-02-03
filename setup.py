@@ -3,15 +3,19 @@ from setuptools import setup, find_packages
 with open('README.rst', 'r') as readme:
     readme = readme.read().replace('=latest', '=stable')
 
+with open('requirements.txt') as req_file:
+    requirements = req_file.read().splitlines()
+
 setup(
     name = "beekeeper",
-    version = "0.7",
+    version = "0.8b0",
     packages = ['beekeeper'],
     author = "Jesse Shapiro",
     author_email = "jesse@bedrockdata.com",
     long_description = readme,
     keywords = "REST API web client wrapper",
     url = "https://github.com/haikuginger/beekeeper",
+    install_requires = requirements
     classifiers = [
         "Development Status :: 4 - Beta",
         "Intended Audience :: Developers",

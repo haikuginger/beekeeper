@@ -18,6 +18,19 @@ except ImportError:
 import json
 from functools import partial
 
+import xmltodict
+
+class XMLParser(object):
+
+    @staticmethod
+    def dump(python_object, encoding):
+        if python_object:
+            return xmltodict.unparse(python_object).encode(encoding)
+
+    @staticmethod
+    def load(response, encoding):
+        return xmltodict.parse(python_object, encoding=encoding, xml_attribs=True)
+
 class JSONParser(object):
 
     @staticmethod
@@ -63,7 +76,9 @@ MIMETYPES = {
     'application/x-www-form-urlencoded': HTTPFormEncoder,
     'text/plain': PlainText,
     'text/html': PlainText,
-    'application/octet-stream': Binary
+    'application/octet-stream': Binary,
+    'application/xml': XMLParser,
+    'text/xml': XMLParser
 }
 
 def code(action, data, mimetype, encoding='utf-8'):
