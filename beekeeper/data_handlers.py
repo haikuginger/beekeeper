@@ -81,6 +81,9 @@ MIMETYPES = {
     'text/xml': XMLParser
 }
 
+def add_data_handler(mimetype, handler):
+    MIMETYPES[mimetype] = handler
+
 def code(action, data, mimetype, encoding='utf-8'):
     if action == 'dump' and hasattr(data, 'read'):
         data = data.read()

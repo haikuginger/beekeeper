@@ -2,5 +2,6 @@
 Importing certain classes into the global namespace.
 """
 
-from .api import API
-from .hive import Hive
+from beekeeper.api import API
+from beekeeper.hive import Hive
+from beekeeper.data_handlers import add_data_handler
