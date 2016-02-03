@@ -34,6 +34,17 @@
                         }
                     }
                 },
+                "text": {
+                    "endpoint": "API",
+                    "variables": {
+                        "prop": {
+                            "value": "revisions"
+                        },
+                        "rvprop": {
+                            "value": "content"
+                        }
+                    }
+                },
                 "categories": {
                     "endpoint": "API",
                     "variables": {
@@ -54,3 +65,4 @@
         }
     }
 }
+
