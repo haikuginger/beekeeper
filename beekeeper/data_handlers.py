@@ -29,7 +29,7 @@ class XMLParser(object):
 
     @staticmethod
     def load(response, encoding):
-        return xmltodict.parse(python_object, encoding=encoding, xml_attribs=True)
+        return xmltodict.parse(response, encoding=encoding, xml_attribs=True, dict_constructor=dict)
 
 class JSONParser(object):
 
