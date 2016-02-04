@@ -120,7 +120,7 @@ class Request(object):
         data, and also set the Content-Type header to the relevant
         value.
         """
-        self.output['data'] = data['data']
+        self.output['data'] = data['value']
 
     def set_url_param(self, param):
         """

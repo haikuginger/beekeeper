@@ -22,7 +22,7 @@ class VariableHandlerTest(unittest.TestCase):
         result = list(x)
         expected = [
             {'name': 'Content-Type', 'type': 'header', 'value': 'text/plain'},
-            {'type': 'data', 'data': b'this is text',}
+            {'type': 'data', 'value': b'this is text',}
         ]
         self.assertEqual(result, expected)
 
@@ -76,7 +76,7 @@ class VariableHandlerTest(unittest.TestCase):
         x = render('http_form', x={'value':'whatever'}, y={'value':'thing'})
         x = list(x)
         self.assertEqual(x[0], {'name': 'Content-Type', 'value': 'application/x-www-form-urlencoded', 'type': 'header'})
-        self.assertIn(x[1]['data'], [b'y=thing&x=whatever', b'x=whatever&y=thing'])
+        self.assertIn(x[1]['value'], [b'y=thing&x=whatever', b'x=whatever&y=thing'])
 
     def test_multipart(self):
         self.old_uuid4 = beekeeper.variable_handlers.uuid4
@@ -87,8 +87,8 @@ class VariableHandlerTest(unittest.TestCase):
         othershould = ('\n--xxx\nContent-Disposition: form-data; name="y"; filename="thing.name"'
                        '\nContent-Type: text/plain\n\nplaintexthere'
                        '\n--xxx\nContent-Disposition: form-data; name="x"\n\nwhatever\n--xxx--')
-        should = {'type': 'data', 'data': should.encode('utf-8')}
-        othershould = {'type': 'data', 'data': othershould.encode('utf-8')}
+        should = {'type': 'data', 'value': should.encode('utf-8')}
+        othershould = {'type': 'data', 'value': othershould.encode('utf-8')}
         x = render('multipart', x={'value': 'whatever'},
             y={'value':'plaintexthere', 'mimetype':'text/plain', 'filename':'thing.name'})
         x = list(x)

@@ -29,7 +29,7 @@ def render_data(**data):
     else:
         for _, val in data.items():
             yield content_type_header(val['mimetype'])
-            yield {'type': 'data', 'data': encode(val['value'], val['mimetype'])}
+            yield {'type': 'data', 'value': encode(val['value'], val['mimetype'])}
 
 def http_form(**values):
     form = {
@@ -78,7 +78,7 @@ def multipart(**values):
             args = (boundary, name)
         output += this_frame.format(*args).encode('ascii') + this_data
     output += '\n--{}--'.format(boundary).encode('ascii')
-    yield {'type': 'data', 'data': output}
+    yield {'type': 'data', 'value': output}
     yield content_type_header('multipart/form-data; boundary={}'.format(boundary))
 
 VARIABLE_TYPES = {
