@@ -73,6 +73,7 @@ class Request(object):
         self.output['data'] = None
         self.output['headers'] = {}
         self.output['url'] = self.action.endpoint.url()
+        self.output['method'] = self.action.method
         for var_type in self.variables.types():
             for var in render(var_type, **self.variables.vals(var_type)):
                 self.set(var)
