@@ -8,7 +8,7 @@ with open('requirements.txt') as req_file:
 
 setup(
     name = "beekeeper",
-    version = "0.8b0",
+    version = "0.8",
     packages = ['beekeeper'],
     author = "Jesse Shapiro",
     author_email = "jesse@bedrockdata.com",

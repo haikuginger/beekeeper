@@ -24,7 +24,7 @@ Requirements
 ------------
 
 beekeeper requires Python 2.7.9/3.4.3 or higher and their built-in
-modules.
+modules, as well as xmltodict.
 
 Installation
 ------------
@@ -75,7 +75,7 @@ variables are defined within the hive, beekeeper will do the work for you,
 automatically determine what data type a particular variable is, and put it
 exactly where it needs to go.
 
-Beekeeper will also automatically handle parsing data. When you
+beekeeper will also automatically handle parsing data. When you
 send data, beekeeper will read the MIME type that was defined in the variable
 for that data, and try to automatically move it from a "Python" format (e.g., 
 a dictionary) to the right REST API format (e.g., JSON).
