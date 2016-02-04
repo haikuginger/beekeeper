@@ -15,4 +15,5 @@ Contents:
    what
    how_to_use
    how_does_it_work
+   advanced_usage
    README
