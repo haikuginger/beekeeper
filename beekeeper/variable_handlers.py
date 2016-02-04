@@ -93,6 +93,9 @@ VARIABLE_TYPES = {
     'bearer_token': bearer
 }
 
+def add_variable_handler(var_type, handler):
+    VARIABLE_TYPES[var_type] = handler
+
 def render(var_type, **values):
     if var_type in VARIABLE_TYPES:
         variables = {val.pop('name', name): val for name, val in values.items()}
