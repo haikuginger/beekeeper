@@ -27,6 +27,15 @@
             "variables": {
                 "contact_id": {"type": "url_replacement"}
             }
+        },
+        "DeleteContact": {
+            "path": "/contacts/v1/contact/vid/{contact_id}",
+            "methods": [
+                "DELETE"
+            ],
+            "variables": {
+                "contact_id": {"type": "url_replacement"}
+            }
         }
     },
     "objects": {
@@ -47,6 +56,10 @@
                             "mimetype": "application/json"
                         }
                     }
+                },
+                "delete": {
+                    "endpoint": "DeleteContact",
+                    "method": "DELETE"
                 },
                 "get": {
                     "endpoint": "SingleContact",
