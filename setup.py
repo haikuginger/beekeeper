@@ -15,7 +15,7 @@ setup(
     long_description = readme,
     keywords = "REST API web client wrapper",
     url = "https://github.com/haikuginger/beekeeper",
-    install_requires = requirements
+    install_requires = requirements,
     classifiers = [
         "Development Status :: 4 - Beta",
         "Intended Audience :: Developers",
