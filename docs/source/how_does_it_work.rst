@@ -43,9 +43,19 @@ Right now, the MIME types that beekeeper has support for are as follows:
 -   application/octet-stream
 -   text/plain
 -   text/html
+-   application/xml
+-   text/xml
 
 Note that any response can be handled in a GZipped format as well; like the
 above formats, this encoding is handled automatically by beekeeper.
+
+Note
+~~~~
+
+beekeeper uses the third-party xmltodict_ library to handle XML requests
+by default. Thus, if you're working with an XML API, be aware of the
+usage implications. You can also set a different XML parser by implementing
+a custom data handler.
 
 Hive Location
 -------------
@@ -269,7 +279,9 @@ filename
 This key is only used in the "multipart" variable type; because data, in the context
 of "multipart" submissions, is assumed to be a file, it may be necessary to set the
 name of that virtual file to a specific name. If this filename is not defined within
-the hive, then a random filename will be assigned.
+the hive, then one of two things will happen. If the object passed to the data handler
+is a file-like object with a "name" attribute, the value of that attribute will be
+used. Otherwise, a random filename in UUID form will be assigned.
 
 Like the value key, filename is determined by the lowest-level explicitly declared
 variable.
@@ -560,3 +572,4 @@ Example
         }
     }
 
+.. _xmltodict: https://github.com/martinblech/xmltodict
