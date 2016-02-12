@@ -6,11 +6,12 @@ from __future__ import absolute_import, division
 from __future__ import unicode_literals, print_function
 
 try:
-    from urllib2 import Request as PythonRequest, HTTPError
+    from urllib2 import Request as Py2Request, HTTPError
     from urllib2 import build_opener, HTTPCookieProcessor
     from urllib import urlencode
     import httplib
     import cookielib
+    pyversion = 2
 
 except ImportError:
     from urllib.request import Request as PythonRequest, build_opener
@@ -19,6 +20,7 @@ except ImportError:
     from urllib.parse import urlencode
     import http.client as httplib
     import http.cookiejar as cookielib
+    pyversion = 3
 
 from beekeeper.variable_handlers import render
 from beekeeper.data_handlers import decode
@@ -28,6 +30,17 @@ try:
     basestring
 except NameError:
     basestring = str
+
+if pyversion == 2:
+    class PythonRequest(Py2Request):
+
+        def __init__(self, *args, **kwargs):
+            self._method = kwargs.pop('method', None)
+            Py2Request.__init__(self, *args, **kwargs)
+
+        def get_method(self):
+            return self._method if self._method else super(RequestWithMethod, self).get_method()
+
 
 COOKIE_JAR = cookielib.CookieJar()
 REQUEST_OPENER = build_opener(HTTPCookieProcessor(COOKIE_JAR))

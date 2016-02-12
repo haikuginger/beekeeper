@@ -22,7 +22,7 @@
             "path": "/contacts/v1/contact/vid/{contact_id}/profile",
             "methods": [
                 "GET",
-                "PUT"
+                "POST"
             ],
             "variables": {
                 "contact_id": {"type": "url_replacement"}
@@ -49,7 +49,7 @@
                 },
                 "update": {
                     "endpoint": "SingleContact",
-                    "method": "PUT",
+                    "method": "POST",
                     "variables": {
                         "contact": {
                             "type": "data",
