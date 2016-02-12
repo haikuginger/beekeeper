@@ -39,7 +39,7 @@ if pyversion == 2:
             Py2Request.__init__(self, *args, **kwargs)
 
         def get_method(self):
-            return self._method if self._method else super(RequestWithMethod, self).get_method()
+            return self._method if self._method else super(PythonRequest, self).get_method()
 
 
 COOKIE_JAR = cookielib.CookieJar()
