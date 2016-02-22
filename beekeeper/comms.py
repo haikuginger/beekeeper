@@ -69,11 +69,12 @@ class Request(object):
     an HTTP request with the data passed to it
     """
 
-    def __init__(self, action, variables, traversal=None, _verbose=False):
+    def __init__(self, action, variables, **kwargs):
         self.action = action
         self.variables = variables
-        self.verbose = _verbose
-        self.traversal = traversal
+        self.return_full_object = kwargs.get('return_full_object', False)
+        self.verbose = kwargs.get('_verbose', False)
+        self.traversal = kwargs.get('traversal', None)
         self.render_variables()
 
     def render_variables(self):
@@ -98,13 +99,13 @@ class Request(object):
         """
         with VerboseContextManager(verbose=self.verbose):
             try:
-                resp = Response(self.action.format(), request(**self.output))
+                resp = Response(self.action.format(), request(**self.output), self.traversal)
             except HTTPError as err:
-                raise ResponseException(self.action.format(), err)
-        if self.verbose:
+                raise ResponseException(self.action.format(), err, self.traversal)
+        if self.return_full_object:
             return resp
         else:
-            return resp.read(traversal=self.traversal)
+            return resp.read()
 
     def set(self, variable):
         """
@@ -164,12 +165,13 @@ class Response(object):
     we get back from the API provider's server
     """
 
-    def __init__(self, static_format, response):
+    def __init__(self, static_format, response, traversal=None):
         self.static_format = static_format
         self.headers = response.headers
         self.data = response.read()
         self.code = response.getcode()
         self.message = response.msg
+        self.traversal = traversal
 
     def mimetype(self):
         """
@@ -190,7 +192,7 @@ class Response(object):
             return self.headers['Content-Type'].split('charset=')[1].split(';')[0]
         return 'utf-8'
 
-    def read(self, raw=False, traversal=None):
+    def read(self, raw=False, perform_traversal=True):
         """
         Parse the body of the response using the Content-Type
         header we pulled from the response, or the hive-defined
@@ -198,8 +200,8 @@ class Response(object):
         """
         if not raw:
             response_body = decode(self.data, self.mimetype(), encoding=self.encoding())
-            if traversal:
-                response_body = traverse(response_body, *traversal)
+            if perform_traversal and self.traversal is not None:
+                return traverse(response_body, *self.traversal)
             return response_body
         else:
             return self.data

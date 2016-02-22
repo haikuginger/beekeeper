@@ -44,7 +44,9 @@
                     },
                     "traverse": [
                         "data",
-                        "thingy"
+                        "children",
+                        "data",
+                        ["name", "body"]
                     ]
                 },
                 "submitted": {

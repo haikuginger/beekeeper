@@ -188,8 +188,15 @@ class Action(object):
         get a Response object back instead of loaded data.
         """
         _verbose = kwargs.pop('_verbose', False)
+        return_full_object = kwargs.pop('return_full_object', False)
         variables = self.variables().fill(*args, **kwargs)
-        return Request(self, variables, traversal=self.traversal, _verbose=_verbose).send()
+        return Request(
+            self,
+            variables,
+            traversal=self.traversal,
+            _verbose=_verbose,
+            return_full_object=return_full_object
+        ).send()
 
     def format(self):
         """
