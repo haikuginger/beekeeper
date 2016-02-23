@@ -116,7 +116,7 @@ class Variable(dict):
         """
         Does the Variable have a defined type?
         """
-        if not self['types']:
+        if self['types'] == []:
             return True
         return False
 
@@ -139,7 +139,6 @@ class Variables(dict):
     def __init__(self, **kwargs):
         dict.__init__(self)
         self.add(**kwargs)
-        self.replacements = partial(self.vals, 'url_replacement')
 
     def required_names(self):
         """
@@ -180,9 +179,8 @@ class Variables(dict):
         """
         output = set()
         for _, var in self.items():
-            for var_type in var.types():
-                if self.vals(var_type):
-                    output.add(var_type)
+            if var.has_value():
+                output.update(var.types())
         return list(output)
 
     def vals(self, var_type):
@@ -214,7 +212,7 @@ class Variables(dict):
         the value from that positional argument.
         """
         missing = self.missing_vars()
-        if 1 == len(args) == len(missing):
+        if len(args) == len(missing) == 1:
             self.setval(missing[0], args[0])
 
     def fill_kwargs(self, **kwargs):
@@ -231,7 +229,7 @@ class Variables(dict):
         full, but ISN'T.
         """
         if self.missing_vars():
-            raise TypeError('Expected values for variables: {}'.format(self.missing_vars()))
+            raise TypeError('Expected values for variables: {}'.format(self.required_namestring()))
 
     def fill(self, *args, **kwargs):
         """

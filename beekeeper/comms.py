@@ -274,8 +274,7 @@ class ResponseException(Response, Exception):
     """
 
     def __init__(self, static_format, response):
-        Response.__init__(self, static_format, response)
-        self.traversal = None
+        Response.__init__(self, static_format, response, traversal=None)
 
     def __str__(self):
         return 'Error message: {}/{}'.format(self.code, self.message)
