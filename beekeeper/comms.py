@@ -77,7 +77,7 @@ class Request(object):
             'method': self.action.method
         }
         for var_type in self.variables.types():
-            render(self, var_type, **self.variables.vals(var_type)):
+            render(self, var_type, **variables.vals(var_type))
         self.output['url'] = self.render_url()
 
     def send(self, return_full_object=False, _verbose=False, traversal=None):
