@@ -76,7 +76,7 @@ class Request(object):
             'headers': {},
             'method': self.action.method
         }
-        for var_type in self.variables.types():
+        for var_type in variables.types():
             render(self, var_type, **variables.vals(var_type))
         self.output['url'] = self.render_url()
 
@@ -113,7 +113,7 @@ class Request(object):
         """
         Render the final URL based on available variables
         """
-        url = self.url.format(self.replacements)
+        url = self.url.format(**self.replacements)
         if self.params:
             return url + '?' + urlencode(self.params)
         return url
