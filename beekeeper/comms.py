@@ -101,7 +101,7 @@ class Request(object):
             try:
                 resp = Response(self.action.format(), request(**self.output), self.traversal)
             except HTTPError as err:
-                raise ResponseException(self.action.format(), err, self.traversal)
+                raise ResponseException(self.action.format(), err)
         if self.return_full_object:
             return resp
         else:
@@ -275,6 +275,7 @@ class ResponseException(Response, Exception):
 
     def __init__(self, static_format, response):
         Response.__init__(self, static_format, response)
+        self.traversal = None
 
     def __str__(self):
         return 'Error message: {}/{}'.format(self.code, self.message)
