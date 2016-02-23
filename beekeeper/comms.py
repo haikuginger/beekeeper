@@ -73,7 +73,7 @@ class Request(object):
         self.params = {}
         self.output = {
             'data': None,
-            'headers': {}
+            'headers': {},
             'method': self.action.method
         }
         for var_type in self.variables.types():
