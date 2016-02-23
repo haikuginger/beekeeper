@@ -24,12 +24,9 @@ def identity(var_type, **values):
         yield dict(type=var_type, name=name, value=value['value'])
 
 def render_data(**data):
-    if len(data) > 1:
-        raise Exception('render_data can only receive a single data object')
-    else:
-        for _, val in data.items():
-            yield content_type_header(val['mimetype'])
-            yield {'type': 'data', 'value': encode(val['value'], val['mimetype'])}
+    for _, val in data.items():
+        yield content_type_header(val['mimetype'])
+        yield {'type': 'data', 'value': encode(val['value'], val['mimetype'])}
 
 def http_form(**values):
     form = {

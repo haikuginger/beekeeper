@@ -24,12 +24,7 @@ except ImportError:
 
 from beekeeper.variable_handlers import render
 from beekeeper.data_handlers import decode
-from beekeeper.exceptions import TraversalError
-
-try:
-    basestring
-except NameError:
-    basestring = str
+from beekeeper.exceptions import TraversalError, TooMuchBodyData
 
 if pyversion == 2:
     class PythonRequest(Py2Request):
@@ -40,6 +35,8 @@ if pyversion == 2:
 
         def get_method(self):
             return self._method if self._method else super(PythonRequest, self).get_method()
+elif pyversion == 3:
+    basestring = str
 
 
 COOKIE_JAR = cookielib.CookieJar()
@@ -134,7 +131,10 @@ class Request(object):
         data, and also set the Content-Type header to the relevant
         value.
         """
-        self.output['data'] = data['value']
+        if self.output['data'] is None:
+            self.output['data'] = data['value']
+        else:
+            raise TooMuchBodyData(self.output['data'], data['value'])
 
     def set_url_param(self, param):
         """

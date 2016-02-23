@@ -2,6 +2,19 @@
 This module holds most of the exceptions we use on a day-to-day basis. Woo.
 """
 
+class TooMuchBodyData(Exception):
+    """
+    The error we raise if the application is trying to send more than
+    one request body
+    """
+
+    def __init__(self, currentdata, newdata):
+        self.currentdata = currentdata
+        self.newdata = newdata
+
+    def __str__(self):
+        return 'Only one request body can be sent.'
+
 class MissingHive(Exception):
     """
     The error we raise if we tried to find a hive at a given location
@@ -12,7 +25,7 @@ class MissingHive(Exception):
         self.location = location
 
     def __str__(self):
-        return "Could not open hive at {}".format(self.location)
+        return 'Could not open hive at {}'.format(self.location)
 
 class VersionNotInHive(Exception):
     """
@@ -24,7 +37,7 @@ class VersionNotInHive(Exception):
         self.version = version
 
     def __str__(self):
-        return "Could not find location for version {}".format(self.version)
+        return 'Could not find location for version {}'.format(self.version)
 
 class TraversalError(Exception):
     """
