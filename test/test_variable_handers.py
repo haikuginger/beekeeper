@@ -64,12 +64,8 @@ class VariableHandlerTest(VariableReceiver, unittest.TestCase):
     def test_multipart(self):
         self.old_uuid4 = beekeeper.variable_handlers.uuid4
         beekeeper.variable_handlers.uuid4 = fakeuuid
-        should = ('\n--xxx\nContent-Disposition: form-data; name="x"\n\nwhatever'
-                  '\n--xxx\nContent-Disposition: form-data; name="y"; filename="thing.name"'
-                  '\nContent-Type: text/plain\n\nplaintexthere\n--xxx--')
-        othershould = ('\n--xxx\nContent-Disposition: form-data; name="y"; filename="thing.name"'
-                       '\nContent-Type: text/plain\n\nplaintexthere'
-                       '\n--xxx\nContent-Disposition: form-data; name="x"\n\nwhatever\n--xxx--')
+        should = '\n--xxx\nContent-Disposition: form-data; name="x"\n\nwhatever\n--xxx\nContent-Disposition: form-data; name="y"; filename="thing.name"\nContent-Type: text/plain\n\nplaintexthere\n--xxx--'.encode('utf-8')
+        othershould = '\n--xxx\nContent-Disposition: form-data; name="y"; filename="thing.name"\nContent-Type: text/plain\n\nplaintexthere\n--xxx\nContent-Disposition: form-data; name="x"\n\nwhatever\n--xxx--'.encode('utf-8')
         options = [should, othershould]
         self.set_headers = partial(self.receive, {'Content-Type': 'multipart/form-data; boundary=xxx'})
         self.set_data = partial(self.receive, options)
