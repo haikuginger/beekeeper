@@ -24,7 +24,7 @@ def set_content_type(rq, mimetype):
 
 def render_data(rq, **data):
     for _, val in data.items():
-        rq.set_headers(**content_type_header(val['mimetype']))
+        set_content_type(rq, val['mimetype'])
         rq.set_data(encode(val['value'], val['mimetype']))
 
 def http_form(rq, **values):
