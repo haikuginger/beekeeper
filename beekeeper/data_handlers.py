@@ -29,7 +29,7 @@ class DataHandlerMeta(type):
             cls.registry.update(**{mimetype: cls for mimetype in dct.get('mimetypes', [dct.get('mimetype')])})
         super(DataHandlerMeta, cls).__init__(name, bases, dct)
 
-DataHandler = DataHandlerMeta('DataHandler', (object,), {})
+DataHandler = DataHandlerMeta(str('DataHandler'), (object,), {})
 
 class XMLParser(DataHandler):
     mimetypes = ['application/xml', 'text/xml']
