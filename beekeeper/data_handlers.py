@@ -12,15 +12,33 @@ from __future__ import unicode_literals, print_function
 
 try:
     from urllib import urlencode
+    pyversion = 2
 except ImportError:
     from urllib.parse import urlencode
+    pyversion = 3
 
 import json
 from functools import partial
 
 import xmltodict
 
-class XMLParser(object):
+class DataHandlerMeta(type):
+
+    def __init__(cls, name, bases, dct):
+        if not hasattr(cls, 'registry'):
+            cls.registry = {}
+        else:
+            cls.registry.update(**{mimetype: cls for mimetype in dct.get('mimetypes', [dct.get('mimetype')])})
+        super(DataHandlerMeta, cls).__init__(name, bases, dct)
+
+if pyversion == 3:
+    exec('class DataHandler(object, metaclass=DataHandlerMeta):\n    pass')
+elif pyversion == 2:
+    class DataHandler(object):
+            __metaclass__ = DataHandlerMeta
+
+class XMLParser(DataHandler):
+    mimetypes = ['application/xml', 'text/xml']
 
     @staticmethod
     def dump(python_object, encoding):
@@ -31,7 +49,8 @@ class XMLParser(object):
     def load(response, encoding):
         return xmltodict.parse(response, encoding=encoding, xml_attribs=True, dict_constructor=dict)
 
-class JSONParser(object):
+class JSONParser(DataHandler):
+    mimetype = 'application/json'
 
     @staticmethod
     def dump(python_object, encoding):
@@ -42,14 +61,16 @@ class JSONParser(object):
     def load(response, encoding):
         return json.loads(response.decode(encoding))
 
-class HTTPFormEncoder(object):
+class HTTPFormEncoder(DataHandler):
+    mimetype = 'application/x-www-form-urlencoded'
 
     @staticmethod
     def dump(python_object, encoding):
         if python_object:
             return urlencode(python_object).encode(encoding)
 
-class PlainText(object):
+class PlainText(DataHandler):
+    mimetypes = ['text/plain', 'text/html']
 
     @staticmethod
     def dump(python_object, encoding):
@@ -60,7 +81,8 @@ class PlainText(object):
     def load(response, encoding):
         return response.decode(encoding)
 
-class Binary(object):
+class Binary(DataHandler):
+    mimetypes = ['application/octet-stream']
 
     @staticmethod
     def dump(python_object, encoding):
@@ -71,19 +93,6 @@ class Binary(object):
     def load(response, encoding):
         return response
 
-MIMETYPES = {
-    'application/json': JSONParser,
-    'application/x-www-form-urlencoded': HTTPFormEncoder,
-    'text/plain': PlainText,
-    'text/html': PlainText,
-    'application/octet-stream': Binary,
-    'application/xml': XMLParser,
-    'text/xml': XMLParser
-}
-
-def add_data_handler(mimetype, handler):
-    MIMETYPES[mimetype] = handler
-
 def code(action, data, mimetype, encoding='utf-8'):
     if action == 'dump' and hasattr(data, 'read'):
         data = data.read()
@@ -91,10 +100,10 @@ def code(action, data, mimetype, encoding='utf-8'):
         return getattr(Binary, action)(data, encoding)
     if action == 'load' and not data:
         return None
-    if action == 'load' and mimetype not in MIMETYPES:
+    if action == 'load' and mimetype not in DataHandler.registry:
         return getattr(Binary, action)(data, encoding)
-    if mimetype in MIMETYPES and getattr(MIMETYPES[mimetype], action, None):
-        return getattr(MIMETYPES[mimetype], action)(data, encoding)
+    if mimetype in DataHandler.registry and getattr(DataHandler.registry[mimetype], action, None):
+        return getattr(DataHandler.registry[mimetype], action)(data, encoding)
     else:
         raise Exception('Cannot parse MIME type {}'.format(mimetype))
 

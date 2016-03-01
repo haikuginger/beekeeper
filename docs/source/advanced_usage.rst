@@ -43,22 +43,29 @@ two possible static methods; "dump" and "load". "dump" takes a Python object and
 encodes it to a bytes object in the appropriate format; "load" does exactly the
 opposite.
 
-Once you've defined your class, you'll need to add it to beekeeper by calling
-"beekeeper.add_data_handler" with the data's MIME type as the first argument,
-and the data handler class you defined as the second argument.
+You should inherit your class from beekeeper.DataHandler; this will
+automatically load it into beekeeper without any further action on your part. To
+make sure that it's handling the right data, you'll need to set at least one of
+two class variables; `mimetype` or `mimetypes`; `mimetype` should be a single
+string with the MIME type you want your class to handle, while if your class
+can handle multiple MIME types (as in the case of an XML parser that handles
+both 'application/xml' and 'text/xml'), you'll set `mimetypes` to be a list of
+those MIME types.
 
 All told, it should look something like this:
 
 .. code:: python
 
-    class CSVHandler(object):
+    class CSVHandler(beekeeper.DataHandler):
+
+    mimetype = 'text/csv'
 
     @staticmethod
     def dump(python_object, encoding):
         """
         Logic goes here - take the Python object the method receives, and parse it
-        into a bytes() object. For elements using text, be sure to use the text encoding
-        passed to the "encoding" argument.
+        into a bytes() object. Be sure to use the text encoding passed to the
+        "encoding" argument.
         """
 
     @staticmethod
@@ -69,10 +76,8 @@ All told, it should look something like this:
         object that's relevant to the data received.
         """
 
-    beekeeper.add_data_handler('text/csv', CSVHandler)
-
 Because you've informed beekeeper about the specific MIME type that the data handler
-should be associated with, beekeeper now knows exactly when to use it; when you define
+should be associated with, beekeeper now knows exactly when to use it: when you define
 a data variable that has the defined MIME type of "text/csv", or when a response is
 received from the server with "text/csv" in the "Content-Type" header. If a MIME type
 doesn't have a data handler associated with it, beekeeper will just return the raw bytes received.
@@ -115,50 +120,31 @@ as follows:
 -   "url_replacement"
 -   "data"
 
-A final variable looks like this:
+Beekeeper is designed to be able to handle (on a structural level; not necessarily with built-in
+code) pretty much any variable type you can throw at it, as long as it can be simplified into those four
+variable types. The way it does this is by passing the request object along with the request
+to parse a variable; the function that eventually handles the variable can then decide how to
+apply the necessary changes to the request.
 
-.. code:: python
+This is done via four callback methods on the Request object:
 
-    {'name': 'Content-Type', 'type': 'header', 'value': 'application/json'}
+-   set_headers(**headers)
+-   set_data(data)
+-   set_url_params(**params)
+-   set_url_replacements(**replacements)
 
-For an example of what a variable handler looks like, take the handler for "data"-type variables.
-Now, I know what you're thinking: "Didn't he JUST say that data variables were handled natively?"
-And they are. But there's a difference between the "data" variable as it exists on the hive, and the
-"data" final variable as it's sent to the request handler.
+Each of these callback methods can take any number of keyword arguments paired with the final values for those variables. The exception is the `set_data()` method, which can take a single value, since each
+HTTP request can only have a single request body (to get around this, use the multipart variable type).
 
-The key is that a data variable within the hive actually contains multiple piece of information;
-it contains the data being sent, sure, but it also contains MIME type information, which needs to
-be written to the "Content-Type" header.
-
-As a result, the handler for "data" variables returns an iterable containing two final variables;
-a "data"-type final variable, and a "header"-type final variable. The built-in variable handlers
-do this by yielding those individual items; acting as generators. This is the recommended behavior
-for any custom handlers you build as well.
-
-When you're building your custom data handler, you have a resource that'll make it much easier;
-the "beekeeper.render_variables" method. This method will takes a single positional argument "var_type"
-as well as any number of keyword arguments. It'll then return an iterable containing all the final
-variables produced by the rendering process.
-
-For example:
-
-.. code:: python
-    >>> my_data = {'value': 'This is my data!', 'mimetype': 'text/plain'}
-    >>> for each in beekeeper.render_variables('data', my_data=my_data):
-    ...     print(each)
-    ...
-    {'name': 'Content-Type', 'type': 'header', 'value': 'text/plain'}
-    {type': 'data', 'value': b'This is my data!'}
-
-Note that the "data" final object doesn't have a name; this is because body data doesn't have any
-sort of variable name to go with it. It's just there.
+You can also use the `beekeeper.render_variables` method if your data needs more processing as one of
+the built-in types.
 
 Now that we've got some principles down, let's look at our original case. We want a simpler way to write
 Hubspot contacts, so let's implement a custom variable type to handle getting them into the right format:
 
 .. code:: python
 
-    def hubspot_contact_handler(**values):
+    def hubspot_contact_handler(rq, **values):
         #Typically, because this is a data-type object, we only receive one variable.
         for _, contact in values.items():
             x = {
@@ -166,14 +152,13 @@ Hubspot contacts, so let's implement a custom variable type to handle getting th
                         {'property':prop, 'value': val} for prop, val in contact.items()
                     ]
                 }
-            return beekeeper.render_variables('data', data={'value': x, 'mimetype': 'application/json'})
+            beekeeper.render_variables(rq, 'data', data={'value': x, 'mimetype': 'application/json'})
 
 This simple function will perform the transformation we're looking for (we can simply pass in a
 dictionary containing the new variable values), and then pass it into the data-rendering pipeline, which
-will yield both the body data we need, and the appropriate "Content-Type" header. Note that in this case,
-we're simply returning the data-rendering generator, which is an iterable in itself. If you're manually
-crafting your final variables, or using multiple variable handlers, then you'll need to built the
-iterable yourself.
+will handle setting both the body data we need, and the appropriate "Content-Type" header. Note that
+there isn't a return statement; this is because each function applies its settings directly to the
+request.
 
 The final step is to bind your function to a new variable type so that when variables of that type are defined in your hive, your parsing scheme happens automatically. Just like with a custom data handler, it takes one step:
 
