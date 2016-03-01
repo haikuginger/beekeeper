@@ -12,10 +12,8 @@ from __future__ import unicode_literals, print_function
 
 try:
     from urllib import urlencode
-    pyversion = 2
 except ImportError:
     from urllib.parse import urlencode
-    pyversion = 3
 
 import json
 from functools import partial
@@ -31,11 +29,7 @@ class DataHandlerMeta(type):
             cls.registry.update(**{mimetype: cls for mimetype in dct.get('mimetypes', [dct.get('mimetype')])})
         super(DataHandlerMeta, cls).__init__(name, bases, dct)
 
-if pyversion == 3:
-    exec('class DataHandler(object, metaclass=DataHandlerMeta):\n    pass')
-elif pyversion == 2:
-    class DataHandler(object):
-            __metaclass__ = DataHandlerMeta
+DataHandler = DataHandlerMeta('DataHandler', (object,), {})
 
 class XMLParser(DataHandler):
     mimetypes = ['application/xml', 'text/xml']
