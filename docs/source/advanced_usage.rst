@@ -144,6 +144,7 @@ Hubspot contacts, so let's implement a custom variable type to handle getting th
 
 .. code:: python
 
+    @beekeeper.VariableHandler('hs_contact')
     def hubspot_contact_handler(rq, **values):
         #Typically, because this is a data-type object, we only receive one variable.
         for _, contact in values.items():
@@ -154,14 +155,12 @@ Hubspot contacts, so let's implement a custom variable type to handle getting th
                 }
             beekeeper.render_variables(rq, 'data', data={'value': x, 'mimetype': 'application/json'})
 
+Note the `beekeeper.VariableHandler('hs_contact')` decorator. This decorator wraps up your function
+and automatically attaches it to any variable types that you include in the decorator parameters. You
+can use a custom variable name, like we did here, or you can bind a custom handler to a built-in variable type by using its name.
+
 This simple function will perform the transformation we're looking for (we can simply pass in a
 dictionary containing the new variable values), and then pass it into the data-rendering pipeline, which
 will handle setting both the body data we need, and the appropriate "Content-Type" header. Note that
 there isn't a return statement; this is because each function applies its settings directly to the
 request.
-
-The final step is to bind your function to a new variable type so that when variables of that type are defined in your hive, your parsing scheme happens automatically. Just like with a custom data handler, it takes one step:
-
-.. code:: python
-
-    beekeeper.add_variable_handler('hs_contact', hubspot_contact_handler)

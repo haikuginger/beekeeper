@@ -16,17 +16,33 @@ from base64 import b64encode
 
 from beekeeper.data_handlers import encode
 
+class VariableHandler(object):
+
+    registry = {}
+
+    def __init__(self, *var_types):
+        self.var_types = var_types
+
+    def __call__(self, func):
+        def wrapped(rq, **values):
+            return func(rq, **values)
+        for each in self.var_types:
+            VariableHandler.registry[each] = wrapped
+        return wrapped
+
 def identity(**values):
     return {name: val['value'] for name, val in values.items()}
 
 def set_content_type(rq, mimetype):
     rq.set_headers(**{'Content-Type': mimetype})
 
+@VariableHandler('data')
 def render_data(rq, **data):
     for _, val in data.items():
         set_content_type(rq, val['mimetype'])
         rq.set_data(encode(val['value'], val['mimetype']))
 
+@VariableHandler('http_form')
 def http_form(rq, **values):
     form = {
         'x': {
@@ -38,6 +54,7 @@ def http_form(rq, **values):
     }
     render(rq, 'data', **form)
 
+@VariableHandler('http_basic_auth')
 def basic_auth(rq, **values):
     username = values.get('username', {}).get('value', '')
     password = values.get('password', {}).get('value', '')
@@ -45,6 +62,7 @@ def basic_auth(rq, **values):
     authinfo = 'Basic {}'.format(authinfo.decode('utf-8'))
     rq.set_headers(Authorization=authinfo)
 
+@VariableHandler('bearer_token')
 def bearer(rq, **values):
     if len(values) > 1:
         raise Exception('Only one bearer token allowed')
@@ -53,10 +71,12 @@ def bearer(rq, **values):
             text = 'Bearer {}'.format(token['value'])
             rq.set_headers(Authorization=text)
 
+@VariableHandler('cookie')
 def cookies(rq, **values):
     cookie = '; '.join([value['value'] for _, value in values.items()])
     rq.set_headers(Cookie=cookie)
 
+@VariableHandler('multipart')
 def multipart(rq, **values):
     frame = '\n--{}\nContent-Disposition: form-data; name="{}"'
     boundary = uuid4().hex
@@ -78,31 +98,19 @@ def multipart(rq, **values):
     header = 'multipart/form-data; boundary={}'.format(boundary)
     set_content_type(rq, header)
 
+@VariableHandler('header')
 def header(rq, **values):
     rq.set_headers(**identity(**values))
 
+@VariableHandler('url_replacement')
 def replacement(rq, **values):
     rq.set_url_replacements(**identity(**values))
 
+@VariableHandler('url_param')
 def url_param(rq, **values):
     rq.set_url_params(**identity(**values))
 
-VARIABLE_TYPES = {
-    'http_form': http_form,
-    'header': header,
-    'data': render_data,
-    'url_replacement': replacement,
-    'url_param': url_param,
-    'http_basic_auth': basic_auth,
-    'cookie': cookies,
-    'multipart': multipart,
-    'bearer_token': bearer
-}
-
-def add_variable_handler(var_type, handler):
-    VARIABLE_TYPES[var_type] = handler
-
 def render(rq, var_type, **values):
-    if var_type in VARIABLE_TYPES:
+    if var_type in VariableHandler.registry:
         variables = {val.pop('name', name): val for name, val in values.items()}
-        VARIABLE_TYPES[var_type](rq, **variables)
+        VariableHandler.registry[var_type](rq, **variables)
