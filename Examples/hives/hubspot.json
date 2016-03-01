@@ -36,6 +36,14 @@
             "variables": {
                 "contact_id": {"type": "url_replacement"}
             }
+        },
+        "ObjectProperties": {
+            "path": "/{obj}/v2/properties/",
+            "variables": {
+                "obj": {
+                    "type": "url_replacement"
+                }
+            }
         }
     },
     "objects": {
@@ -68,6 +76,14 @@
                         "*",
                         "value"
                     ]
+                },
+                "properties": {
+                    "endpoint": "ObjectProperties",
+                    "variables": {
+                        "obj": {
+                            "value": "contacts"
+                        }
+                    }
                 }
             }
         }

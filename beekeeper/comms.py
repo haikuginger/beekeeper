@@ -66,97 +66,57 @@ class Request(object):
     an HTTP request with the data passed to it
     """
 
-    def __init__(self, action, variables, **kwargs):
+    def __init__(self, action, variables):
         self.action = action
-        self.variables = variables
-        self.return_full_object = kwargs.get('return_full_object', False)
-        self.verbose = kwargs.get('_verbose', False)
-        self.traversal = kwargs.get('traversal', None)
-        self.render_variables()
-
-    def render_variables(self):
-        """
-        Take the variables passed in during init and parse them
-        into the base level variables we can actually do stuff with.
-        """
+        self.url = self.action.endpoint.url()
+        self.replacements = {}
         self.params = {}
-        self.output = {}
-        self.output['data'] = None
-        self.output['headers'] = {}
-        self.output['url'] = self.action.endpoint.url()
-        self.output['method'] = self.action.method
-        for var_type in self.variables.types():
-            for var in render(var_type, **self.variables.vals(var_type)):
-                self.set(var)
-        self.output['url'] = self.output['url'] + self.param_string()
+        self.output = {
+            'data': None,
+            'headers': {},
+            'method': self.action.method
+        }
+        for var_type in variables.types():
+            render(self, var_type, **variables.vals(var_type))
+        self.output['url'] = self.render_url()
 
-    def send(self):
+    def send(self, return_full_object=False, _verbose=False, traversal=None):
         """
         Send the request defined by the data stored in the object.
         """
-        with VerboseContextManager(verbose=self.verbose):
+        with VerboseContextManager(verbose=_verbose):
             try:
-                resp = Response(self.action.format(), request(**self.output), self.traversal)
+                resp = Response(self.action.format(), request(**self.output), traversal)
             except HTTPError as err:
                 raise ResponseException(self.action.format(), err)
-        if self.return_full_object:
+        if return_full_object:
             return resp
         else:
             return resp.read()
 
-    def set(self, variable):
-        """
-        Set the received base-level variable in the object
-        """
-        method_map = {
-            'url_param': self.set_url_param,
-            'header': self.set_header,
-            'url_replacement': self.set_url_replacement,
-            'data': self.set_data
-        }
-        if variable['type'] in method_map:
-            method_map[variable['type']](variable)
-        else:
-            raise Exception('Cannot handle final variables of type {}'.format(variable['type']))
-
-    def set_header(self, header):
-        """
-        Set a base-level header variable to have the given value
-        """
-        self.output['headers'][header['name']] = header['value']
+    def set_headers(self, **headers):
+        self.output['headers'].update(headers)
 
     def set_data(self, data):
-        """
-        Set the base-level data variable to contain the given
-        data, and also set the Content-Type header to the relevant
-        value.
-        """
         if self.output['data'] is None:
             self.output['data'] = data['value']
         else:
             raise TooMuchBodyData(self.output['data'], data['value'])
 
-    def set_url_param(self, param):
-        """
-        Set the base-level URL parameter variable to have the given value
-        """
-        self.params[param['name']] = param['value']
+    def set_url_params(self, **params):
+        self.params.update(params)
 
-    def set_url_replacement(self, rep):
-        """
-        Do a partial format of the string with just the variable in question
-        """
-        url = self.output['url']
-        url = str(rep['value']).join(url.split('{' + rep['name'] + '}'))
-        self.output['url'] = url
+    def set_url_replacements(self, **replacements):
+        self.replacements.update(replacements)
 
-    def param_string(self):
+    def render_url(self):
         """
-        urlencode all known params, add a ? to the front, and return.
+        Render the final URL based on available variables
         """
+        url = self.url.format(**self.replacements)
         if self.params:
-            return '?' + urlencode(self.params)
-        return ''
+            return url + '?' + urlencode(self.params)
+        return url
 
 class Response(object):
 
