@@ -173,6 +173,7 @@ class Action(object):
         self.url = endpoint.url
         self.description = kwargs.get('description', None)
         self.traversal = kwargs.get('traverse', None)
+        self.timeout = kwargs.get('timeout', 5)
 
     def variables(self):
         """
@@ -193,7 +194,8 @@ class Action(object):
         return Request(self, variables).send(
             traversal=self.traversal,
             _verbose=_verbose,
-            return_full_object=return_full_object
+            return_full_object=return_full_object,
+            _timeout=self.timeout
         )
 
     def format(self):

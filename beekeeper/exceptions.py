@@ -15,6 +15,14 @@ class TooMuchBodyData(Exception):
     def __str__(self):
         return 'Only one request body can be sent.'
 
+class RequestTimeout(Exception):
+
+    def __init__(self, retry_method):
+        self.retry = retry_method
+
+    def __str__(self):
+        return "Request timed out"
+
 class MissingHive(Exception):
     """
     The error we raise if we tried to find a hive at a given location
