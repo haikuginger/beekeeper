@@ -182,9 +182,10 @@ type
 This key can bear a number of possible values describing the different kinds of
 variables that might be used. Some of them will have special caveats, noted below:
 
--   **url_param** (default)
-    This is the default when a type for the variable is not specified. It appends
-    a query string to the URL.
+-   **url_param**
+    This is the default when a type for the variable is not specified and when a
+    custom default variable type is not set on a hive. It appends a query string
+    to the URL.
 -   **url_replacement**
     No caveats; this simply replaces any "format" blocks in the URL (as denoted by
     curly brackets around a variable name) with the variable's value.
@@ -322,6 +323,36 @@ Example
                 "name": "OtherFileSubmissionName"
             },
             "SimpleDefaultedUrlParam": {
+            }
+        }
+    }
+
+variable_settings
+~~~~~~~~~~~~~~~~~
+
+Beekeeper can be configured to have different behaviors around variables. The
+variable_settings key can be used to do just that. It's optional, and can contain two
+main keys; first, a default_type key that sets what beekeeper is going to do when it
+encounters either undefined variables, or a variable with an undefined type. Second,
+it can contain a custom_types object that has information about the custom variable
+types that the hive uses. If a handler for each of these types isn't present at
+initialization of the hive into an API, an exception is raised. Note that the content
+of each custom_types key isn't mandated, but it should be descriptive, and ideally
+provide the reader with information about how to get or create the handler.
+
+Example
+^^^^^^^
+
+.. code:: json
+
+    {
+        "variable_settings": {
+            "default_type": "url_replacement",
+            "custom_types": {
+                "special_var": {
+                    "description": "Helps with doing cool stuff!",
+                    "web_url": "http://mydomain.com/special_var_handler"
+                }
             }
         }
     }
@@ -466,6 +497,13 @@ method
 The method key is an optional string that defines which HTTP method will 
 be used to hit the given endpoint. If no method is given, the action will
 default to attempting an HTTP GET.
+
+timeout
++++++++
+
+The optional timeout key is a number that defines the amount of time beekeeper
+will wait on data to come from a socket before raising a timeout exception
+that you can use to retry the request. The default is five seconds.
 
 variables
 +++++++++

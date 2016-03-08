@@ -111,8 +111,8 @@ It's a little bit verbose. And the whole goal of beekeeper is to make your life 
 you can put in a little work to make it easier still, just by defining a custom variable
 handler and sticking it into beekeeper.
 
-A variable handler takes keyword arguments of the defined type, processes them, and yields
-"final variables" of one of the types beekeeper handles natively. Those four types are
+A variable handler takes keyword arguments of the defined type, processes them, and sets
+"final variables" of one of the types native to HTTP requests. Those four types are
 as follows:
 
 -   "url_param"
@@ -133,7 +133,8 @@ This is done via four callback methods on the Request object:
 -   set_url_params(**params)
 -   set_url_replacements(**replacements)
 
-Each of these callback methods can take any number of keyword arguments paired with the final values for those variables. The exception is the `set_data()` method, which can take a single value, since each
+Each of these callback methods can take any number of keyword arguments paired with the final values
+for those variables. The exception is the `set_data()` method, which can take a single value, since each
 HTTP request can only have a single request body (to get around this, use the multipart variable type).
 
 You can also use the `beekeeper.render_variables` method if your data needs more processing as one of
@@ -157,10 +158,19 @@ Hubspot contacts, so let's implement a custom variable type to handle getting th
 
 Note the `beekeeper.VariableHandler('hs_contact')` decorator. This decorator wraps up your function
 and automatically attaches it to any variable types that you include in the decorator parameters. You
-can use a custom variable name, like we did here, or you can bind a custom handler to a built-in variable type by using its name.
+can use a custom variable name, like we did here, or you can bind a custom handler to a built-in
+variable type by using its name.
 
 This simple function will perform the transformation we're looking for (we can simply pass in a
 dictionary containing the new variable values), and then pass it into the data-rendering pipeline, which
 will handle setting both the body data we need, and the appropriate "Content-Type" header. Note that
 there isn't a return statement; this is because each function applies its settings directly to the
 request.
+
+If you're writing a hive for general distribution, carefully consider the implications of
+using custom variable types. Unlike custom data types, beekeeper has no way to handle
+hives that use custom variables unless a handler has been bound. Thus, it's best to
+create two versions of a hive; one that uses the custom handlers you want, and one that
+uses only the standard variable types. You can then use the versioning data in the standard
+hive to point to the customized hive in an opt-in manner for consumers who have either
+implemented or downloaded an appropriate variable handler.
