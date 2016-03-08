@@ -39,6 +39,13 @@ class VersionNotInHive(Exception):
     def __str__(self):
         return 'Could not find location for version {}'.format(self.version)
 
+class CannotHandleVariableTypes(Exception):
+    def __init__(self, *types):
+        self.types = types
+
+    def __str__(self):
+        return 'Cannot handle custom variable types {}'.format(self.types)
+
 class TraversalError(Exception):
     """
     The error we raise if the given traversal list can't handle the

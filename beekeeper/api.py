@@ -228,7 +228,10 @@ class API(object):
     def __init__(self, hive, *args, **kwargs):
         self._root = hive.get('root')
         self._mimetype = hive.get('mimetype', 'application/json')
-        self._vars = Variables(**hive.get('variables', {})).fill(*args, **kwargs)
+        self._vars = Variables(
+            variable_settings = hive.get('variable_settings', {}),
+            **hive.get('variables', {})
+            ).fill(*args, **kwargs)
         self._endpoints = {}
         self._description = hive.get('description', None)
         self._name = hive.get('name', None)

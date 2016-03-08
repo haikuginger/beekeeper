@@ -99,9 +99,9 @@ class Request(object):
 
     def set_data(self, data):
         if self.output['data'] is None:
-            self.output['data'] = data['value']
+            self.output['data'] = data
         else:
-            raise TooMuchBodyData(self.output['data'], data['value'])
+            raise TooMuchBodyData(self.output['data'], data)
 
     def set_url_params(self, **params):
         self.params.update(params)
