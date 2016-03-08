@@ -6,7 +6,7 @@ from __future__ import absolute_import, division
 from __future__ import unicode_literals, print_function
 
 try:
-    from urllib2 import Request as Py2Request, HTTPError
+    from urllib2 import Request as Py2Request, HTTPError, URLError
     from urllib2 import build_opener, HTTPCookieProcessor
     from urllib import urlencode
     import httplib
@@ -16,15 +16,18 @@ try:
 except ImportError:
     from urllib.request import Request as PythonRequest, build_opener
     from urllib.request import HTTPCookieProcessor
-    from urllib.error import HTTPError
+    from urllib.error import HTTPError, URLError
     from urllib.parse import urlencode
     import http.client as httplib
     import http.cookiejar as cookielib
     pyversion = 3
 
+import socket
+import functools
+
 from beekeeper.variable_handlers import render
 from beekeeper.data_handlers import decode
-from beekeeper.exceptions import TraversalError, TooMuchBodyData
+from beekeeper.exceptions import TraversalError, TooMuchBodyData, RequestTimeout
 
 if pyversion == 2:
     class PythonRequest(Py2Request):
@@ -56,8 +59,9 @@ def request(*args, **kwargs):
     Make a request with the received arguments and return an
     HTTPResponse object
     """
+    timeout = kwargs.pop('timeout')
     req = PythonRequest(*args, **kwargs)
-    return REQUEST_OPENER.open(req)
+    return REQUEST_OPENER.open(req, timeout=timeout)
 
 class Request(object):
 
@@ -80,15 +84,25 @@ class Request(object):
             render(self, var_type, **variables.vals(var_type))
         self.output['url'] = self.render_url()
 
-    def send(self, return_full_object=False, _verbose=False, traversal=None):
+    def send(self, **kwargs):
         """
         Send the request defined by the data stored in the object.
         """
+        return_full_object = kwargs.get('return_full_object', False)
+        _verbose = kwargs.get('_verbose', False)
+        traversal = kwargs.get('traversal', None)
+        timeout = kwargs.get('_timeout', 5)
         with VerboseContextManager(verbose=_verbose):
             try:
-                resp = Response(self.action.format(), request(**self.output), traversal)
+                resp = Response(self.action.format(), request(timeout=timeout, **self.output), traversal)
             except HTTPError as err:
                 raise ResponseException(self.action.format(), err)
+            except URLError as err:
+                if isinstance(err.reason, socket.timeout):
+                    raise RequestTimeout(functools.partial(self.send, **kwargs))
+                else:
+                    raise
+
         if return_full_object:
             return resp
         else:
@@ -99,9 +113,9 @@ class Request(object):
 
     def set_data(self, data):
         if self.output['data'] is None:
-            self.output['data'] = data['value']
+            self.output['data'] = data
         else:
-            raise TooMuchBodyData(self.output['data'], data['value'])
+            raise TooMuchBodyData(self.output['data'], data)
 
     def set_url_params(self, **params):
         self.params.update(params)

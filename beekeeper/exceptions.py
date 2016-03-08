@@ -15,6 +15,14 @@ class TooMuchBodyData(Exception):
     def __str__(self):
         return 'Only one request body can be sent.'
 
+class RequestTimeout(Exception):
+
+    def __init__(self, retry_method):
+        self.retry = retry_method
+
+    def __str__(self):
+        return "Request timed out"
+
 class MissingHive(Exception):
     """
     The error we raise if we tried to find a hive at a given location
@@ -38,6 +46,13 @@ class VersionNotInHive(Exception):
 
     def __str__(self):
         return 'Could not find location for version {}'.format(self.version)
+
+class CannotHandleVariableTypes(Exception):
+    def __init__(self, *types):
+        self.types = types
+
+    def __str__(self):
+        return 'Cannot handle custom variable types {}'.format(self.types)
 
 class TraversalError(Exception):
     """

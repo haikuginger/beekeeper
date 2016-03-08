@@ -9,6 +9,9 @@ from functools import partial
 from keyword import iskeyword
 from copy import deepcopy
 
+from beekeeper.variable_handlers import VariableHandler
+from beekeeper.exceptions import CannotHandleVariableTypes
+
 DEFAULT_VARIABLE_TYPE = 'url_param'
 
 def merge(var1, var2):
@@ -23,7 +26,7 @@ def merge(var1, var2):
     out['types'] = var2.get('types') + [x for x in var1.get('types') if x not in var2.get('types')]
     out['optional'] = var2.get('optional', var1.get('optional', False))
     out['filename'] = var2.get('filename', var2.get('filename', None))
-    return Variable(**out)
+    return Variable(var1.default_type, **out)
 
 class Variable(dict):
 
@@ -33,7 +36,8 @@ class Variable(dict):
     defines in the hive, and provides metadata methods.
     """
 
-    def __init__(self, **kwargs):
+    def __init__(self, default_type, **kwargs):
+        self.default_type = default_type
         kwargs['types'] = kwargs.get('types', [])
         if not kwargs['types'] and kwargs.get('type', False):
             kwargs['types'].append(kwargs.pop('type'))
@@ -60,7 +64,7 @@ class Variable(dict):
         few microseconds of the execution (happens on each .execute() call),
         this should be fine.
         """
-        newthing = Variable()
+        newthing = Variable(self.default_type)
         for name, value in self.items():
             if callable(value):
                 newthing[name] = deepcopy(value())
@@ -110,7 +114,7 @@ class Variable(dict):
         for each in self['types']:
             yield each
         if self.has_no_type():
-            yield DEFAULT_VARIABLE_TYPE
+            yield self.default_type
 
     def has_no_type(self):
         """
@@ -136,9 +140,20 @@ class Variables(dict):
     Provides methods and storage for multiple variable objects
     """
 
-    def __init__(self, **kwargs):
+    def __init__(self, variable_settings={}, **kwargs):
+        self.settings = variable_settings
+        self.default_type = variable_settings.get('default_type', DEFAULT_VARIABLE_TYPE)
+        self.assert_type_handling()
         dict.__init__(self)
         self.add(**kwargs)
+
+    def assert_type_handling(self):
+        unhandleable = []
+        for name in self.settings.get('custom_types', {}):
+            if name not in VariableHandler.registry:
+                unhandleable.append(name)
+        if len(unhandleable) > 0:
+            raise CannotHandleVariableTypes(*unhandleable)
 
     def required_names(self):
         """
@@ -200,9 +215,9 @@ class Variables(dict):
                 var['name'] = name
                 name = '_' + name
             if name in self:
-                self[name] = merge(self[name], Variable(**var))
+                self[name] = merge(self[name], Variable(self.default_type, **var))
             else:
-                self[name] = Variable(**var)
+                self[name] = Variable(self.default_type, **var)
         return self
 
     def fill_arg(self, *args):
@@ -248,7 +263,7 @@ class Variables(dict):
         if varname in self:
             self[varname]['value'] = value
         else:
-            self[varname] = Variable(value=value)
+            self[varname] = Variable(self.default_type, value=value)
 
     def missing_vars(self):
         """
