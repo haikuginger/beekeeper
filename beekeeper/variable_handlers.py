@@ -15,6 +15,7 @@ from functools import partial
 from base64 import b64encode
 
 from beekeeper.data_handlers import encode
+from beekeeper.exceptions import CannotHandleVariableTypes
 
 class VariableHandler(object):
 
@@ -38,7 +39,7 @@ def set_content_type(rq, mimetype):
 
 @VariableHandler('data')
 def render_data(rq, **data):
-    for _, val in data.items():
+    for val in data.values():
         set_content_type(rq, val['mimetype'])
         rq.set_data(encode(val['value'], val['mimetype']))
 
@@ -67,20 +68,20 @@ def bearer(rq, **values):
     if len(values) > 1:
         raise Exception('Only one bearer token allowed')
     else:
-        for _, token in values.items():
+        for token in values.values():
             text = 'Bearer {}'.format(token['value'])
             rq.set_headers(Authorization=text)
 
 @VariableHandler('cookie')
 def cookies(rq, **values):
-    cookie = '; '.join([value['value'] for _, value in values.items()])
+    cookie = '; '.join([value['value'] for value in values.values()])
     rq.set_headers(Cookie=cookie)
 
 @VariableHandler('multipart')
 def multipart(rq, **values):
     frame = '\n--{}\nContent-Disposition: form-data; name="{}"'
     boundary = uuid4().hex
-    files = [name for name, data in values.items() if data.get('mimetype', False)]
+    files = [name for name, data in values.items() if 'mimetype' in data]
     output = bytes()
     for name, value in values.items():
         if name in files:
@@ -95,8 +96,8 @@ def multipart(rq, **values):
         output += this_frame.format(*args).encode('ascii') + this_data
     output += '\n--{}--'.format(boundary).encode('ascii')
     rq.set_data(output)
-    header = 'multipart/form-data; boundary={}'.format(boundary)
-    set_content_type(rq, header)
+    content_type_header = 'multipart/form-data; boundary={}'.format(boundary)
+    set_content_type(rq, content_type_header)
 
 @VariableHandler('header')
 def header(rq, **values):
@@ -114,3 +115,5 @@ def render(rq, var_type, **values):
     if var_type in VariableHandler.registry:
         variables = {val.pop('name', name): val for name, val in values.items()}
         VariableHandler.registry[var_type](rq, **variables)
+    else:
+        raise CannotHandleVariableTypes(var_type)

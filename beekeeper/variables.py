@@ -94,7 +94,7 @@ class Variable(dict):
         """
         Does the variable have a value?
         """
-        if self.value() is not None:
+        if self.get('value', None) is not None:
             return True
         return False
 
@@ -124,25 +124,15 @@ class Variable(dict):
             return True
         return False
 
-    def value(self):
-        """
-        Get the value of the variable, if defined.
-        """
-        val = self.get('value', None)
-        if callable(val):
-            return val()
-        else:
-            return val
-
 class Variables(dict):
 
     """
     Provides methods and storage for multiple variable objects
     """
 
-    def __init__(self, variable_settings={}, **kwargs):
-        self.settings = variable_settings
-        self.default_type = variable_settings.get('default_type', DEFAULT_VARIABLE_TYPE)
+    def __init__(self, **kwargs):
+        self.settings = kwargs.pop('variable_settings', {})
+        self.default_type = self.settings.get('default_type', DEFAULT_VARIABLE_TYPE)
         self.assert_type_handling()
         dict.__init__(self)
         self.add(**kwargs)
@@ -193,7 +183,7 @@ class Variables(dict):
         Variables object.
         """
         output = set()
-        for _, var in self.items():
+        for var in self.values():
             if var.has_value():
                 output.update(var.types())
         return list(output)

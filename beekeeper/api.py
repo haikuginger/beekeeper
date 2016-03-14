@@ -153,11 +153,8 @@ class APIObjectInstance(object):
         partial with the ID variable set to have the value passed during
         initialization.
         """
-        if name in self._actions():
-            action = getattr(self._api_object, name)
-            return partial(action, **{self._id_variable: self._id_key})
-        else:
-            raise AttributeError
+        action = getattr(self._api_object, name)
+        return partial(action, **{self._id_variable: self._id_key})
 
 class Action(object):
 
@@ -231,7 +228,7 @@ class API(object):
         self._root = hive.get('root')
         self._mimetype = hive.get('mimetype', 'application/json')
         self._vars = Variables(
-            variable_settings = hive.get('variable_settings', {}),
+            variable_settings=hive.get('variable_settings', {}),
             **hive.get('variables', {})
             ).fill(*args, **kwargs)
         self._endpoints = {}
@@ -250,7 +247,8 @@ class API(object):
         in that file, paying attention to the version keyword argument.
         """
         version = kwargs.pop('version', None)
-        return cls(Hive.from_file(fname, version), *args, **kwargs)
+        require = kwargs.pop('require_https', True)
+        return cls(Hive.from_file(fname, version, require), *args, **kwargs)
 
     @classmethod
     def from_remote_hive(cls, url, *args, **kwargs):
@@ -259,16 +257,18 @@ class API(object):
         paying attention to the version keyword argument.
         """
         version = kwargs.pop('version', None)
-        return cls(Hive.from_url(url, version), *args, **kwargs)
+        require = kwargs.pop('require_https', False)
+        return cls(Hive.from_url(url, version, require), *args, **kwargs)
 
     @classmethod
-    def from_domain(cls, domain, suppress=False, *args, **kwargs):
+    def from_domain(cls, domain, *args, **kwargs):
         """
         Try to download the hive file from the domain using the defined
         beekeeper spec of domain/api/hive.json.
         """
         version = kwargs.pop('version', None)
-        return cls(Hive.from_domain(domain, suppress, version), *args, **kwargs)
+        require = kwargs.pop('require_https', False)
+        return cls(Hive.from_domain(domain, version, require), *args, **kwargs)
 
     def __repr__(self):
         out = ''

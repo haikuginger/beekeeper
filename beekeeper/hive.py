@@ -29,42 +29,49 @@ class Hive(dict):
         dict.__init__(self, **kwargs)
 
     @classmethod
-    def from_file(cls, fname, version=None):
+    def from_file(cls, fname, version=None, require_https=True):
         """
         Create a Hive object based on JSON located in a local file.
         """
         if os.path.exists(fname):
-            return cls(**json.load(open(fname, 'r'))).from_version(version)
+            with open(fname) as hive_file:
+                return cls(**json.load(hive_file)).from_version(version, require_https=require_https)
         else:
             raise MissingHive(fname)
 
     @classmethod
-    def from_url(cls, url, version=None):
+    def from_url(cls, url, version=None, require_https=False):
         """
         Create a Hive object based on JSON located at a remote URL.
         """
-        try:
-            return cls(**download_as_json(url)).from_version(version)
-        except ResponseException:
-            raise MissingHive(url)
+        if "https://" in url:
+            require_https = True
+        if "http://" in url and require_https:
+            try:
+                hive = cls.from_url(url, version=version, require_https=False)
+            except HiveLoadedOverHTTP as err:
+                hive = err.hive
+            raise HiveLoadedOverHTTP(url, hive)
+        else:
+            try:
+                return cls(**download_as_json(url)).from_version(version, require_https)
+            except (ResponseException, URLError):
+                raise MissingHive(url)
 
     @classmethod
-    def from_domain(cls, domain, suppress=False, version=None):
+    def from_domain(cls, domain, version=None, require_https=True):
         """
         Try to find a hive for the given domain; raise an error if we have to
         failover to HTTP and haven't explicitly suppressed it in the call.
         """
         url = 'https://' + domain + '/api/hive.json'
         try:
-            return cls.from_url(url, version=version)
-        except (MissingHive, URLError):
+            return cls.from_url(url, version=version, require_https=require_https)
+        except MissingHive:
             url = 'http://' + domain + '/api/hive.json'
-            if not suppress:
-                raise HiveLoadedOverHTTP(url, cls.from_url(url))
-            else:
-                return cls.from_url(url)
+            return cls.from_url(url, version=version, require_https=require_https)
 
-    def from_version(self, version):
+    def from_version(self, version, require_https=False):
         """
         Create a Hive object based on the information in the object
         and the version passed into the method.
@@ -72,7 +79,7 @@ class Hive(dict):
         if version is None or self.version() == version:
             return self
         else:
-            return Hive.from_url(self.get_version_url(version))
+            return Hive.from_url(self.get_version_url(version), require_https=require_https)
 
     def get_version_url(self, version):
         """
@@ -93,4 +100,4 @@ class Hive(dict):
         """
         Generate a list of other versions in the hive.
         """
-        return self.get('versioning', {}).get('previous_versions', [])
+        return self.get('versioning', {}).get('other_versions', [])

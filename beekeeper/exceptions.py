@@ -52,7 +52,7 @@ class CannotHandleVariableTypes(Exception):
         self.types = types
 
     def __str__(self):
-        return 'Cannot handle custom variable types {}'.format(self.types)
+        return 'Cannot handle variable type(s) {}'.format(self.types)
 
 class TraversalError(Exception):
     """

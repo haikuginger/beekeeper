@@ -59,7 +59,7 @@ def request(*args, **kwargs):
     Make a request with the received arguments and return an
     HTTPResponse object
     """
-    timeout = kwargs.pop('timeout')
+    timeout = kwargs.pop('timeout', 5)
     req = PythonRequest(*args, **kwargs)
     return REQUEST_OPENER.open(req, timeout=timeout)
 
@@ -82,7 +82,6 @@ class Request(object):
         }
         for var_type in variables.types():
             render(self, var_type, **variables.vals(var_type))
-        self.output['url'] = self.render_url()
 
     def send(self, **kwargs):
         """
@@ -92,6 +91,7 @@ class Request(object):
         _verbose = kwargs.get('_verbose', False)
         traversal = kwargs.get('traversal', None)
         timeout = kwargs.get('_timeout', 5)
+        self.output['url'] = self.render_url()
         with VerboseContextManager(verbose=_verbose):
             try:
                 resp = Response(self.action.format(), request(timeout=timeout, **self.output), traversal)
@@ -111,8 +111,8 @@ class Request(object):
     def set_headers(self, **headers):
         self.output['headers'].update(headers)
 
-    def set_data(self, data):
-        if self.output['data'] is None:
+    def set_data(self, data, override=False):
+        if self.output['data'] is None or override:
             self.output['data'] = data
         else:
             raise TooMuchBodyData(self.output['data'], data)
@@ -188,7 +188,7 @@ def traverse(obj, *path, **kwargs):
     laid out line by line below.
     """
     if path:
-        if isinstance(obj, list):
+        if isinstance(obj, list) or isinstance(obj, tuple):
             #If the current state of the object received is a
             #list, return a list of each of its children elements,
             #traversed with the current state of the string
@@ -196,7 +196,7 @@ def traverse(obj, *path, **kwargs):
         elif isinstance(obj, dict):
             #If the current state of the object received is a
             #dictionary, do the following...
-            if isinstance(path[0], list):
+            if isinstance(path[0], list) or isinstance(path[0], tuple):
                 #If the current top item in the path is a list,
                 #return a dictionary with keys to each of the
                 #items in the list, each traversed recursively.
@@ -208,7 +208,7 @@ def traverse(obj, *path, **kwargs):
                 #If the key isn't a string (or a list; handled
                 #previously), raise an exception.
                 raise TraversalError(obj, path[0])
-            elif path[0] == '*':
+            elif path[0] == '\\*':
                 #If the key is a wildcard, return a dict containing
                 #each item, traversed down recursively.
                 return {name: traverse(item, *path[1:], split=True) for name, item in obj.items()}

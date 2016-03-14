@@ -536,7 +536,7 @@ we'll do one of several things:
     will be the traversed value of the item for that key in the object that
     we're currently recursed to.
 
--   If the top item in the path is a string with value "*", we'll act similarly
+-   If the top item in the path is a string with value "\\*", we'll act similarly
     to what we would do if the top item in the path was a list, but instead of
     looking at just specific keys, we'll return every key in the current object.
 

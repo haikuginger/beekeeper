@@ -8,7 +8,7 @@ hive_v5 = {
     "name": "test_hive",
     "versioning": {
         "version": 5,
-        "previous_versions": [
+        "other_versions": [
             {
                 "version": 4,
                 "location": "url_for_version_4"
@@ -21,7 +21,7 @@ hive_v4 = {
     "name": "test_hive",
     "versioning": {
         "version": 4,
-        "previousVersions": [
+        "other_versions": [
             {
                 "version": 5,
                 "location": "url_for_version_5"
