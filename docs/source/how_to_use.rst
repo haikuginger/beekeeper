@@ -21,7 +21,7 @@ First, we'll need to import beekeeper and initialize the FooBar Ventures API:
     >>> fbv = API.from_domain('foobar.com')
 
 Note that if FooBar Ventures served their API over HTTP rather than over HTTPS,
-you'd need to set the "suppress" keyword argument to True to prevent beekeeper
+you'd need to set the "require_https" keyword argument to False to prevent beekeeper
 from raising an exception. Because hive files change the behavior of your
 application, secure transmission is really important. If you're possibly
 going to be passing sensitive information with your application, and the API
