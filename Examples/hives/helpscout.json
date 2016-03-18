@@ -1,0 +1,170 @@
+{
+    "name": "Helpscout",
+    "description": "Client for the Helpscout helpdesk platform",
+    "root": "https://api.helpscout.net/v1",
+    "versioning": {
+        "version": 1
+    },
+    "variables": {
+        "api_key": {
+            "name": "username",
+            "type": "http_basic_auth"
+        },
+        "dummy_password": {
+            "name": "password",
+            "type": "http_basic_auth",
+            "value": "not_a_real_password"
+        }
+    },
+    "endpoints": {
+        "Customers": {
+            "path": "/customers.json",
+            "methods": [
+                "GET",
+                "POST"
+            ]
+        },
+        "CustomerByID": {
+            "path": "/customers/{customer_id}.json",
+            "methods": [
+                "GET",
+                "PUT"
+            ],
+            "variables": {
+                "customer_id": {
+                    "type": "url_replacement"
+                }
+            }
+        },
+        "ConversationsByCustomer": {
+            "path": "/mailboxes/{mailbox_id}/customers/{customer_id}/conversations.json",
+            "methods": [
+                "GET"
+            ],
+            "variables": {
+                "mailbox_id": {
+                    "type": "url_replacement"
+                },
+                "customer_id": {
+                    "type": "url_replacement"
+                }
+            }
+        },
+        "Mailboxes": {
+            "path": "/mailboxes.json",
+            "methods": [
+                "GET"
+            ]
+        },
+        "SingleMailbox": {
+            "path": "/mailboxes/{mailbox_id}.json",
+            "methods": [
+                "GET"
+            ],
+            "variables": {
+                "mailbox_id": {
+                    "type": "url_replacement"
+                }
+            }
+        },
+        "SingleConversation": {
+            "path": "/conversations/{conversation_id}.json",
+            "methods": [
+                "GET"
+            ],
+            "variables": {
+                "conversation_id": {
+                    "type": "url_replacement"
+                }
+            }
+        }
+    },
+    "objects": {
+        "Customers": {
+            "id_variable": "customer_id",
+            "actions": {
+                "create": {
+                    "endpoint": "Customers",
+                    "method": "POST",
+                    "variables": {
+                        "customer": {
+                            "type": "data",
+                            "mimetype": "application/json"
+                        },
+                        "reload": {
+                            "type": "url_param",
+                            "value": true
+                        }
+                    }
+                },
+                "update": {
+                    "endpoint": "CustomerByID",
+                    "method": "PUT",
+                    "variables": {
+                        "customer": {
+                            "type": "data",
+                            "mimetype": "application/json"
+                        },
+                        "reload": {
+                            "type": "url_param",
+                            "value": true
+                        }
+                    }
+                },
+                "get": {
+                    "endpoint": "CustomerByID",
+                    "method": "GET"
+                },
+                "list": {
+                    "endpoint": "Customers",
+                    "method": "GET",
+                    "variables": {
+                        "firstName": {
+                            "optional": true,
+                            "type": "url_param"
+                        },
+                        "lastName": {
+                            "optional": true,
+                            "type": "url_param"
+                        },
+                        "email": {
+                            "optional": true,
+                            "type": "url_param"
+                        },
+                        "modifiedSince": {
+                            "optional": true,
+                            "type": "url_param"
+                        },
+                        "page": {
+                            "optional": true,
+                            "type": "url_param"
+                        }
+                    }
+                },
+                "conversations": {
+                    "endpoint": "ConversationsByCustomer",
+                    "method": "GET"
+                }
+            }
+        },
+        "Mailboxes": {
+            "id_variable": "mailbox_id",
+            "actions": {
+                "get": {
+                    "endpoint": "SingleMailbox"
+                },
+                "list": {
+                    "endpoint": "Mailboxes"
+                }
+            }
+        },
+        "Conversations": {
+            "id_variable": "conversation_id",
+            "actions": {
+                "get": {
+                    "endpoint": "SingleConversation"
+                }
+            }
+        }
+    }
+}

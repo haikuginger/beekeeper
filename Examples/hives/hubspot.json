@@ -6,6 +6,9 @@
         "hapikey": {"type": "url_param"}
     },
     "endpoints": {
+        "ListContacts": {
+            "path": "/contacts/v1/lists/all/contacts/all"
+        },
         "CreateContact": {
             "path": "/contacts/v1/contact",
             "methods": [
@@ -28,6 +31,17 @@
                 "contact_id": {"type": "url_replacement"}
             }
         },
+        "ContactByEmail": {
+            "path": "/contacts/v1/contact/email/{email}/profile",
+            "methods": [
+                "GET"
+            ],
+            "variables": {
+                "email": {
+                    "type": "url_replacement"
+                }
+            }
+        },
         "DeleteContact": {
             "path": "/contacts/v1/contact/vid/{contact_id}",
             "methods": [
@@ -44,6 +58,17 @@
                     "type": "url_replacement"
                 }
             }
+        },
+        "ObjectPropertyGroups": {
+            "path": "/{obj}/v2/groups",
+            "variables": {
+                "obj": {
+                    "type": "url_replacement"
+                },
+                "includeProperties": {
+                    "optional": true
+                }
+            }
         }
     },
     "objects": {
@@ -51,6 +76,23 @@
             "description": "An entity representing a single person",
             "id_variable": "contact_id",
             "actions": {
+                "list": {
+                    "endpoint": "ListContacts",
+                    "variables": {
+                        "count": {
+                            "value": 100
+                        },
+                        "property": {
+                            "optional": true
+                        },
+                        "propertyMode": {
+                            "value": "value_only"
+                        },
+                        "vidOffset": {
+                            "optional": true
+                        }
+                    }
+                },
                 "create": {
                     "endpoint": "CreateContact",
                     "method": "POST"
@@ -73,12 +115,28 @@
                     "endpoint": "SingleContact",
                     "traverse": [
                         "properties",
-                        "*",
+                        "\\*",
+                        "value"
+                    ]
+                },
+                "by_email": {
+                    "endpoint": "ContactByEmail",
+                    "traverse": [
+                        "properties",
+                        "\\*",
                         "value"
                     ]
                 },
                 "properties": {
                     "endpoint": "ObjectProperties",
+                    "variables": {
+                        "obj": {
+                            "value": "contacts"
+                        }
+                    }
+                },
+                "property_groups": {
+                    "endpoint": "ObjectPropertyGroups",
                     "variables": {
                         "obj": {
                             "value": "contacts"
