@@ -34,13 +34,7 @@
                     "endpoint": "SearchMovies",
                     "method": "GET",
                     "traverse": [
-                        "results",
-                        [
-                            "title",
-                            "studio",
-                            "location",
-                            "releasedate"
-                        ]
+                        "results"
                     ]
                 },
                 "get": {
