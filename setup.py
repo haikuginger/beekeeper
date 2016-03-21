@@ -8,7 +8,7 @@ with open('requirements.txt') as req_file:
 
 setup(
     name = "beekeeper",
-    version = "0.9.1",
+    version = "0.9.2",
     packages = ['beekeeper'],
     author = "Jesse Shapiro",
     author_email = "jesse@bedrockdata.com",
@@ -28,6 +28,8 @@ setup(
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.4",
         "Programming Language :: Python :: 3.5",
+        "Programming Language :: Python :: Implementation :: CPython"
+        "Programming Language :: Python :: Implementation :: PyPy",
         "Topic :: Internet",
         "Topic :: Internet :: WWW/HTTP",
         "Topic :: Software Development :: Libraries",

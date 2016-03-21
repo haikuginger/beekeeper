@@ -16,6 +16,7 @@ except ImportError:
     from urllib.parse import urlencode
 
 import json
+import json.decoder
 from functools import partial
 
 import xmltodict
@@ -73,7 +74,11 @@ class PlainText(DataHandler):
 
     @staticmethod
     def load(response, encoding):
-        return response.decode(encoding)
+        response = response.decode(encoding)
+        try:
+            return json.loads(response)
+        except (ValueError, json.decoder.JSONDecodeError):
+            return response
 
 class Binary(DataHandler):
     mimetypes = ['application/octet-stream']
