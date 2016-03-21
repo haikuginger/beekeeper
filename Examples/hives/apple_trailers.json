@@ -1,0 +1,53 @@
+{
+    "name": "Apple Trailers",
+    "root": "http://trailers.apple.com",
+    "mimetype": "application/json",
+    "endpoints": {
+        "SearchMovies": {
+            "path": "/trailers/home/scripts/quickfind.php",
+            "variables": {
+                "title": {
+                    "name": "q",
+                    "type": "url_param"
+                }
+            },
+            "methods": [
+                "GET"
+            ]
+        },
+        "GetMoviePage": {
+            "path": "{path}data/page.json",
+            "variables": {
+                "path": {
+                    "type": "url_replacement"
+                }
+            },
+            "methods": [
+                "GET"
+            ]
+        }
+    },
+    "objects": {
+        "Movies": {
+            "actions": {
+                "search": {
+                    "endpoint": "SearchMovies",
+                    "method": "GET",
+                    "traverse": [
+                        "results",
+                        [
+                            "title",
+                            "studio",
+                            "location",
+                            "releasedate"
+                        ]
+                    ]
+                },
+                "get": {
+                    "endpoint": "GetMoviePage",
+                    "method": "GET"
+                }
+            }
+        }
+    }
+}
