@@ -77,7 +77,9 @@ class PlainText(DataHandler):
         response = response.decode(encoding)
         try:
             return json.loads(response)
-        except (ValueError, json.decoder.JSONDecodeError):
+        except ValueError:
+            return response
+        except json.decoder.JSONDecodeError:
             return response
 
 class Binary(DataHandler):
