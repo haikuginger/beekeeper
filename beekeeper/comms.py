@@ -97,6 +97,8 @@ class Request(object):
                 resp = Response(self.action.format(), request(timeout=timeout, **self.output), traversal)
             except HTTPError as err:
                 raise ResponseException(self.action.format(), err)
+            except socket.timeout:
+                raise RequestTimeout(functools.partial(self.send, **kwargs))
             except URLError as err:
                 if isinstance(err.reason, socket.timeout):
                     raise RequestTimeout(functools.partial(self.send, **kwargs))
