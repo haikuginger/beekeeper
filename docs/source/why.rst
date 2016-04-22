@@ -83,7 +83,7 @@ so that they can be used within a single line of code. For example:
 
 .. code:: python
 
-    resp = Requests.get('domain.tld/api/resource').json()
+    resp = requests.get('domain.tld/api/resource').json()
 
 The above code succinctly describes exactly what the developer wants
 to do - and then does it. It uses the HTTP GET method at the web address
@@ -128,8 +128,8 @@ useful or memorable. The Requests method isn't much better:
 
 .. code:: python
 
-    payload = {'format': 'json', 'action': 'query', 'prop': 'revision', 'rvprop': 'content', 'titles': 'Wisconsin'}
-    resp = Requests.get('https://en.wikipedia.org/w/api.php', params=payload).json()
+    payload = {'format': 'json', 'action': 'query', 'prop': 'revisions', 'rvprop': 'content', 'titles': 'Wisconsin'}
+    resp = requests.get('https://en.wikipedia.org/w/api.php', params=payload).json()
 
 This situation is made worse by the fact that a URL parameter is only
 one type of variable. A given API might not only require the developer
