@@ -12,7 +12,13 @@ is compatible with a variety of products from other vendors, and FooBar
 Ventures also maintains a list of compatible products which can be accessed
 via the API.
 
-First, we'll need to import beekeeper and initialize the FooBar Ventures API:
+First, install beekeeper:
+
+.. code:: bash
+
+    $ pip install beekeeper
+
+Then, from within Python, we'll need to import beekeeper and initialize the FooBar Ventures API:
 
 .. code:: python
 
